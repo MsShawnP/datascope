@@ -64,6 +64,13 @@ cd field-story-scorer
 pip install -r requirements.txt
 ```
 
+To run the test suite:
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
 ---
 
 ## Usage
@@ -133,7 +140,7 @@ Real reports produced by running the scorer on the bundled sample inputs — com
 
 ![Side-by-side: standard mode vs --strict-types scoring the same column](samples/output/screenshots/strict_mode_comparison.png)
 
-*The same column (`revenue_mixed`) scored two ways. On the left, standard mode reads it as numeric and gives it 0.9775 — the 15 string cells were silently converted to NaN. On the right, `--strict-types` reads each cell's actual type and exposes the breakdown in the new `type_mix` column. The composite score in the screenshot (0.817) reflects an older build; the current build scores the same column at 0.9708 (type contamination shows up in `type_consistency`) — but the headline remains the new `type_mix` column.*
+*The same column (`revenue_mixed`) scored two ways. On the left, standard mode reads it as numeric and gives it 0.9775 — the 15 string cells were silently converted to NaN. On the right, `--strict-types` keeps the cells as their native Python types: the composite score drops slightly (0.9708, driven by `type_consistency` 0.925 vs 1.0), and the new `type_mix` column shows exactly which cells are off — `numeric:185, str:15`. The screenshot is rendered directly from the actual scorer outputs by `tools/render_strict_mode_comparison.py` and can be regenerated any time the numbers change.*
 
 The two mixed-types reports are the headline — same input, scored both ways. Open them side-by-side and look at the `type_mix` column to see exactly what `--strict-types` catches.
 
@@ -177,10 +184,13 @@ field-story-scorer/
 ├── scorer.py               # Main CLI tool — single file, no submodules
 ├── generate_sample.py      # Generates the bundled sample inputs
 ├── requirements.txt
+├── requirements-dev.txt    # Adds pytest for the test suite
+├── pytest.ini
 ├── samples/                # Committed sample inputs and rendered outputs
 │   ├── README.md
 │   ├── input/
 │   └── output/
+├── tests/                  # pytest tests for scoring + analyze()
 └── README.md
 ```
 

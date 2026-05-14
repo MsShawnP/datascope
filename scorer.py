@@ -242,7 +242,7 @@ def recommend_chart(field_type: str, cardinality: float, distribution: float) ->
         "unknown": "N/A — no data",
     }
     base = recs.get(field_type, "Bar Chart")
-    if cardinality == 1.0:
+    if cardinality == 1.0 and field_type != "identifier":
         base += " ⚠ All unique — likely ID column"
     elif cardinality < 0.01:
         base += " ⚠ Near-constant — low analytical value"
@@ -451,7 +451,7 @@ def write_excel(rankings_df, profiles_df, chart_recs_df, corr_matrix_df,
                 try:
                     if cell.value:
                         max_len = max(max_len, len(str(cell.value)))
-                except:
+                except (AttributeError, TypeError):
                     pass
             ws.column_dimensions[col_letter].width = min(max(max_len + 2, min_w), max_w)
 
@@ -578,13 +578,13 @@ def write_pdf(rankings_df, profiles_df, chart_recs_df, corr_matrix_df,
     def score_color(val):
         try:
             v = float(val)
-            if v >= 0.75:
-                return GREEN
-            if v >= 0.45:
-                return YELLOW
-            return RED
-        except:
+        except (ValueError, TypeError):
             return colors.white
+        if v >= 0.75:
+            return GREEN
+        if v >= 0.45:
+            return YELLOW
+        return RED
 
     def make_table(df, col_widths=None, score_cols=None):
         data = [list(df.columns)]
