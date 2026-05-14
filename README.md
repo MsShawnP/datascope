@@ -1,58 +1,23 @@
-# field-story-scorer
+# datascope
 
-Built for the reality of consulting work: you get handed a mystery `.xlsx`, you need to know which fields are trustworthy before you build anything on top of them.
+Data created upstream — by manufacturing teams entering UPCs, inventory staff assigning product codes, offshore developers choosing column types — silently breaks systems downstream. A product code with letters where EDI expects numbers. Fifteen "N/A" strings buried in 500 numeric rows that pandas silently drops, skewing every calculation by 3%.
 
-field-story-scorer is a command-line tool that profiles every column in an Excel file, scores each field across five data quality dimensions, and outputs formatted Excel and PDF reports ready for stakeholder review.
-
----
-
-## Features
-
-- **Five scoring dimensions** with a weighted composite score per field
-- **Excel report** with color-scale conditional formatting, frozen panes, and data bars
-- **PDF report** in landscape format with color-coded score cells
-- **`--strict-types` mode** — catches mixed-type columns that pandas silently coerces (see below)
-- Single-file tool, minimal dependencies, no configuration required
+datascope finds these problems, explains what's wrong in plain English, and tells you what to fix. It reads each cell's actual type (not what pandas infers), detects hidden quality issues, classifies their severity by downstream impact, and generates a professional diagnostic report.
 
 ---
 
-## Scoring Methodology
+## What It Finds
 
-Each field is scored 0–1 across five dimensions. Scores are combined into a weighted composite.
-
-| Dimension | Weight | Description |
+| Detection | Example | Severity |
 |---|---|---|
-| **Completeness** | 30% | Ratio of non-null values to total rows |
-| **Type Consistency** | 25% | Proportion of values sharing the majority Python type |
-| **Cardinality** | 15% | Unique value ratio (identifies constants and pure ID columns) |
-| **Distribution** | 15% | Coefficient of variation (numeric) or normalized entropy (categorical) |
-| **Correlation** | 15% | Mean absolute Pearson correlation with other numeric fields |
+| **Mixed types** | 485 numbers + 15 strings in a "numeric" column | Critical |
+| **Sentinel values** | "N/A", "TBD", "pending" hiding in numeric data | Critical |
+| **Leading-zero inconsistency** | "00123" alongside "456" — keys that won't match | Warning |
+| **Mixed date formats** | "01/15/2026" and "2026-01-15" in the same column | Warning |
+| **Suspected duplicate IDs** | 98% unique in an ID column — the other 2% will fan out joins | Warning |
+| **Near-constant columns** | 1 distinct value across 10,000 rows | Info |
 
-### Composite Score Thresholds
-
-| Score | Meaning |
-|---|---|
-| ≥ 0.75 | Field is analytically strong — high completeness, consistent types, meaningful variance |
-| 0.45 – 0.74 | Usable with caveats — review dimension breakdown for weak points |
-| < 0.45 | Problematic — likely sparse, constant, or type-inconsistent |
-
----
-
-## Output Reports
-
-Both formats contain the same four sections:
-
-**Tab 1 — Field Rankings**
-All fields sorted by composite score. Includes field type classification, null count, and unique value count.
-
-**Tab 2 — Field Profiles**
-Per-field breakdown of all five dimension scores. Data bars in Excel, color-coded cells in PDF.
-
-**Tab 3 — Chart Recommendations**
-Suggested visualization types derived from inferred field type, cardinality, and distribution score. Flags identifier columns and near-constant fields.
-
-**Tab 4 — Correlation Matrix**
-Pearson correlation matrix for all numeric fields. Diverging red/white/green color scale.
+Each finding is expressed as **assumption vs. reality**: what the data *appears* to be vs. what it *actually contains*. Every finding includes a downstream impact explanation, a fix recommendation, and a prevention rule.
 
 ---
 
@@ -61,14 +26,7 @@ Pearson correlation matrix for all numeric fields. Diverging red/white/green col
 ```bash
 git clone https://github.com/MsShawnP/field-story-scorer.git
 cd field-story-scorer
-pip install -r requirements.txt
-```
-
-To run the test suite:
-
-```bash
-pip install -r requirements-dev.txt
-pytest
+pip install -e .
 ```
 
 ---
@@ -76,122 +34,102 @@ pytest
 ## Usage
 
 ```bash
-# Basic run — first sheet, reports saved to ./reports/
-python scorer.py --input data.xlsx
+# Analyze an Excel file
+datascope data.xlsx
 
-# Specify sheet by name or index
-python scorer.py --input data.xlsx --sheet Sheet1
-python scorer.py --input data.xlsx --sheet 0
+# Analyze a CSV
+datascope sales_export.csv
 
-# Custom output directory
-python scorer.py --input data.xlsx --sheet Sales --output-dir ./client_reports
-
-# Strict type detection (see below)
-python scorer.py --input data.xlsx --sheet Sales --strict-types
+# Specify a sheet and output directory
+datascope data.xlsx --sheet Revenue --output-dir ./client_reports
 ```
 
-Output files are named `{input_stem}_field_report.xlsx` and `{input_stem}_field_report.pdf`. Strict-types runs append `_strict` to avoid overwriting standard output.
+The tool produces a PDF diagnostic report and prints a summary to stdout:
+
+```
+datascope: Analyzing sample_mixed_types.xlsx...
+  200 rows x 6 columns
+
+Found 4 findings:
+  2 Critical  ########
+  1 Warning   ####
+  1 Info      ####
+
+Top critical findings:
+  * revenue_mixed: 15 non-numeric values hiding in an otherwise numeric column
+  * status: Sentinel values 'N/A' and 'TBD' in numeric data
+
+Report saved: reports/sample_mixed_types_diagnostic.pdf
+```
 
 ---
 
-## `--strict-types` Flag
+## The Report
 
-By default, pandas infers column dtypes on load. A column containing 485 floats and 15 cells with the string `"N/A"` will be read as `float64` — the strings become `NaN`, the type inconsistency disappears, and the column scores nearly identically to a clean numeric field.
+The PDF report is structured for non-technical readers — no jargon, no composite scores, no unexplained metrics.
 
-`--strict-types` bypasses pandas inference entirely, reading each cell's native Python type via openpyxl. The same column now reveals its actual composition:
+**Executive Summary** — overall health assessment, finding counts by severity, top critical issues highlighted.
 
-```
-Standard mode:   revenue_mixed   score=0.9775   type=numeric_continuous   mix=(unavailable)
-Strict mode:     revenue_mixed   score=0.9708   type=numeric_continuous   mix=[numeric:185, str:15]
-```
+**Findings by Severity** — each finding presented as a card:
+- **Assumption**: what the data appears to be
+- **Reality**: what it actually contains
+- **Impact**: what breaks downstream
+- **Recommended Fix**: what to do now
+- **Prevention Rule**: what right looks like going forward
 
-The composite score is only modestly affected — type contamination shows up in the `type_consistency` dimension (0.925 vs 1.0), and the other four dimensions are unchanged because the 15 sentinel strings get coerced for distribution and correlation purposes. The real signal is the new **`type_mix`** column, added to the Field Rankings and Chart Recommendations tabs in strict-mode output: it surfaces the exact cell-type breakdown for every column (e.g. `revenue: numeric:200`, `customer_id: str:200`, `revenue_mixed: numeric:185, str:15`) so contamination is impossible to miss.
+**Field Inventory** — summary table of all columns with their detected issue types and severity.
 
-**When to use it:** Any time a dataset has been manually edited in Excel, exported from a system that emits sentinel strings (`"N/A"`, `"TBD"`, `"—"`, `"NULL"`), or assembled from multiple sources. Standard mode is faster and sufficient for clean, system-generated data.
-
----
-
-## See It In Action
-
-Real reports produced by running the scorer on the bundled sample inputs — committed to the repo so you can preview the output without installing anything. See [samples/README.md](samples/README.md) for the full breakdown.
-
-**Inputs**
-- [samples/input/sample_sales.xlsx](samples/input/sample_sales.xlsx) — 500-row clean dataset
-- [samples/input/sample_mixed_types.xlsx](samples/input/sample_mixed_types.xlsx) — 200-row dataset with 15 sentinel-string cells in `revenue_mixed`
-
-**Outputs**
-- Clean dataset:
-  [xlsx](samples/output/sample_sales_field_report.xlsx) ·
-  [pdf](samples/output/sample_sales_field_report.pdf)
-- Mixed-types, standard mode (string contamination hidden — `revenue_mixed` scores 0.9775, no `type_mix` column):
-  [xlsx](samples/output/sample_mixed_types_field_report.xlsx) ·
-  [pdf](samples/output/sample_mixed_types_field_report.pdf)
-- Mixed-types, `--strict-types` (string contamination exposed — `revenue_mixed` scores 0.9708 with `type_mix=[numeric:185, str:15]`):
-  [xlsx](samples/output/sample_mixed_types_field_report_strict.xlsx) ·
-  [pdf](samples/output/sample_mixed_types_field_report_strict.pdf)
-
-![Field Rankings tab — every column ranked by composite score with a green-to-red color scale](samples/output/screenshots/excel_field_rankings.png)
-
-*Field Rankings tab from a 500-row sample. Every column in the input is ranked by composite score with a green-to-red color scale; trustworthy fields like `revenue` and `customer_id` rise to the top, while sparse or constant columns like `mostly_null` and `constant_col` fall to the bottom.*
-
-![Correlation Matrix tab with diverging red/white/green color scale across numeric columns](samples/output/screenshots/correlation_matrix.png)
-
-*Correlation Matrix tab from the same sample. Every numeric column is paired against every other numeric column, with green showing positive correlation, red showing negative, and white showing none. Generated automatically as part of every report.*
-
-![Side-by-side: standard mode vs --strict-types scoring the same column](samples/output/screenshots/strict_mode_comparison.png)
-
-*The same column (`revenue_mixed`) scored two ways. On the left, standard mode reads it as numeric and gives it 0.9775 — the 15 string cells were silently converted to NaN. On the right, `--strict-types` keeps the cells as their native Python types: the composite score drops slightly (0.9708, driven by `type_consistency` 0.925 vs 1.0), and the new `type_mix` column shows exactly which cells are off — `numeric:185, str:15`. The screenshot is rendered directly from the actual scorer outputs by `tools/render_strict_mode_comparison.py` and can be regenerated any time the numbers change.*
-
-The two mixed-types reports are the headline — same input, scored both ways. Open them side-by-side and look at the `type_mix` column to see exactly what `--strict-types` catches.
+Findings are color-coded (red/amber/blue) and grouped by severity so readers know what to fix first.
 
 ---
 
-## Sample Data
+## How It Works
 
-Pre-generated samples live in [samples/](samples/) (see [samples/README.md](samples/README.md)). To regenerate them:
+Most tools let pandas (or the SQL driver, or Excel) decide column types. A column with 485 numbers and 15 strings becomes `float64` — the strings become `NaN`, the type problem disappears, and every downstream calculation is quietly wrong.
 
-```bash
-python generate_sample.py
-```
+datascope reads each cell's actual Python type via openpyxl (for Excel) or raw-string inference (for CSV). This cell-level type detection is always on — there's no flag to enable it because skipping it defeats the purpose.
 
-This writes two files into `samples/input/`:
-- `sample_sales.xlsx` — 500-row dataset with a range of field types (categorical, numeric, boolean, sparse, constant)
-- `sample_mixed_types.xlsx` — 200-row dataset with 15 genuine string cells in an otherwise numeric column, designed to demonstrate `--strict-types`
+The analysis pipeline:
+
+1. **Load** — read with cell-level type preservation (no silent coercion)
+2. **Detect** — five analyzers scan for type inconsistencies, sentinels, format issues, and cardinality anomalies
+3. **Classify** — severity assigned by downstream impact (critical = silent data loss, warning = likely misinterpretation, info = worth noting)
+4. **Compose** — plain-English narrative generated for each finding
+5. **Report** — professional PDF rendered with reportlab
 
 ---
 
-## Field Type Classification
+## Severity Model
 
-The tool infers a field type for each column used in chart recommendations and report labeling.
-
-| Type | Criteria |
-|---|---|
-| `numeric_continuous` | Numeric dtype, > 20 unique values |
-| `numeric_discrete` | Numeric dtype, ≤ 20 unique values |
-| `categorical_low` | Object/string, ≤ 20 unique values |
-| `categorical_high` | Object/string, > 20 unique values, < 90% unique ratio |
-| `identifier` | > 90% unique values — likely a key or ID column |
-| `boolean` | Boolean dtype |
-| `datetime` | Datetime dtype |
-| `unknown` | No non-null values |
+| Level | Meaning | Examples |
+|---|---|---|
+| **Critical** | Silent data loss or incorrect calculations will occur | Mixed types in numeric columns; sentinel values pandas drops without warning |
+| **Warning** | Key mismatches or misinterpretation likely | Leading-zero stripping; ambiguous date formats; duplicate IDs |
+| **Info** | Worth noting, no direct downstream breakage | Near-constant columns; unusual cardinality |
 
 ---
 
 ## Project Structure
 
 ```
-field-story-scorer/
-├── scorer.py               # Main CLI tool — single file, no submodules
-├── generate_sample.py      # Generates the bundled sample inputs
-├── requirements.txt
-├── requirements-dev.txt    # Adds pytest for the test suite
-├── pytest.ini
-├── samples/                # Committed sample inputs and rendered outputs
-│   ├── README.md
-│   ├── input/
-│   └── output/
-├── tests/                  # pytest tests for scoring + analyze()
-└── README.md
+datascope/
+├── loaders/          # Excel and CSV with cell-level type tracking
+│   ├── excel.py      # openpyxl-based, preserves per-cell Python types
+│   ├── csv_loader.py # Raw string inference (None → int → float → bool → datetime → str)
+│   └── base.py       # Extension-based dispatch
+├── analyzers/        # Five detectors, each returns list[Finding]
+│   ├── type_consistency.py
+│   ├── sentinel.py
+│   ├── format_check.py
+│   └── cardinality.py
+├── findings/         # Severity classifier + NL template engine
+│   ├── severity.py   # Impact-based classification rules
+│   ├── templates.py  # Plain-English templates per finding sub-type
+│   ├── composer.py   # Template dispatch
+│   └── pipeline.py   # classify → compose → sort
+├── reports/
+│   └── pdf.py        # Professional PDF with reportlab
+└── cli.py            # argparse CLI, pipeline orchestration
 ```
 
 ---
@@ -199,10 +137,10 @@ field-story-scorer/
 ## Requirements
 
 - Python 3.10+
-- pandas ≥ 2.0
-- openpyxl ≥ 3.1
-- reportlab ≥ 4.0
-- numpy ≥ 1.24
+- pandas >= 2.0
+- openpyxl >= 3.1
+- reportlab >= 4.0
+- numpy >= 1.24
 
 ---
 

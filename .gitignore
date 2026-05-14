@@ -15,8 +15,8 @@ venv/
 env/
 ENV/
 
-# Tool output
-reports/
+# Tool output (generated reports directory, not datascope/reports/ source)
+/reports/
 *.pdf
 *.xlsx
 *.xls
