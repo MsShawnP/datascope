@@ -13,9 +13,9 @@ See README.md for full documentation.
 """
 
 import argparse
-import os
 import sys
 import warnings
+from datetime import date, datetime
 from pathlib import Path
 
 import numpy as np
@@ -60,7 +60,11 @@ def load_strict(input_path: str, sheet) -> pd.DataFrame:
 
     headers = [str(h) if h is not None else f"col_{i}" for i, h in enumerate(rows[0])]
     data = [list(r) for r in rows[1:]]
-    return pd.DataFrame(data, columns=headers)
+    # dtype=object is what makes strict mode strict: without it, pandas would
+    # infer float64 / string / datetime64 per column and the type_mix breakdown
+    # would only ever populate for genuinely-mixed columns. Passing dtype=object
+    # preserves each cell's raw Python type (int, float, str, bool, datetime).
+    return pd.DataFrame(data, columns=headers, dtype=object)
 
 
 # ---------------------------------------------------------------------------
@@ -121,12 +125,26 @@ def score_type_consistency(series: pd.Series) -> float:
     return round(majority / len(filled), 4)
 
 
-def score_distribution(series: pd.Series) -> float:
+def score_distribution(series: pd.Series, numeric_view: pd.Series = None) -> float:
     """
     For numeric: normalized coefficient of variation capped at 1.
     For categorical: normalized entropy (0=one category, 1=perfectly uniform).
     Non-numeric / non-categorical gets 0.5 (neutral).
+
+    numeric_view: optional coerced-numeric view of the column (used in strict mode
+    when the raw series is dtype=object but the column is majority-numeric).
     """
+    if numeric_view is not None:
+        filled = numeric_view.dropna()
+        if len(filled) < 2:
+            return 0.0
+        mean = filled.mean()
+        std = filled.std()
+        if mean == 0:
+            return 0.0 if std == 0 else 1.0
+        cv = abs(std / mean)
+        return round(min(cv, 1.0), 4)
+
     filled = series.dropna()
     if len(filled) < 2:
         return 0.0
@@ -139,38 +157,32 @@ def score_distribution(series: pd.Series) -> float:
         cv = abs(std / mean)
         return round(min(cv, 1.0), 4)
 
-    if pd.api.types.is_object_dtype(series) or pd.api.types.is_categorical_dtype(series):
+    if pd.api.types.is_object_dtype(series) or isinstance(series.dtype, pd.CategoricalDtype):
         counts = filled.value_counts(normalize=True)
         k = len(counts)
         if k == 1:
             return 0.0
-        entropy = -np.sum(counts * np.log2(counts + 1e-9))
+        entropy = -np.sum(counts * np.log2(counts))
         max_entropy = np.log2(k)
         return round(entropy / max_entropy if max_entropy > 0 else 0.0, 4)
 
     return 0.5
 
 
-def score_correlation(series: pd.Series, df: pd.DataFrame) -> float:
+def score_correlation(col_name, corr_matrix: pd.DataFrame) -> float:
     """
-    For numeric columns: mean absolute Pearson correlation with all other numeric columns.
-    Higher = more correlated to the rest of the dataset (more analytically connected).
-    Non-numeric columns get 0.0.
+    Mean absolute Pearson correlation of `col_name` with all other numeric columns.
+
+    `corr_matrix` is precomputed in analyze() over either the dtype-selected numeric
+    columns (standard mode) or a coerced-numeric view of object columns that are
+    majority-numeric (strict mode). Columns not present in the matrix score 0.0.
     """
-    if not pd.api.types.is_numeric_dtype(series):
+    if corr_matrix.empty or col_name not in corr_matrix.columns:
         return 0.0
-    numeric_df = df.select_dtypes(include=[np.number])
-    if numeric_df.shape[1] < 2:
+    col_corr = corr_matrix[col_name].drop(col_name, errors="ignore").abs()
+    if len(col_corr) == 0:
         return 0.0
-    try:
-        corr_matrix = numeric_df.corr(method="pearson")
-        col_name = series.name
-        if col_name not in corr_matrix.columns:
-            return 0.0
-        col_corr = corr_matrix[col_name].drop(col_name, errors="ignore").abs()
-        return round(col_corr.mean(), 4)
-    except Exception:
-        return 0.0
+    return round(col_corr.mean(), 4)
 
 
 WEIGHTS = {
@@ -187,7 +199,21 @@ def composite_score(row: dict) -> float:
     return round(total, 4)
 
 
-def infer_field_type(series: pd.Series) -> str:
+def infer_field_type(series: pd.Series, numeric_view: pd.Series = None,
+                     force_type: str = None) -> str:
+    """
+    `numeric_view` (strict mode): coerced-numeric Series for columns that are
+    majority-numeric despite dtype=object. When supplied, the column is classified
+    as numeric_continuous / numeric_discrete based on the coerced cardinality.
+
+    `force_type` (strict mode): explicit override for columns detected as bool or
+    datetime via cell-type sniffing.
+    """
+    if force_type is not None:
+        return force_type
+    if numeric_view is not None:
+        card = numeric_view.dropna().nunique()
+        return "numeric_continuous" if card > 20 else "numeric_discrete"
     if pd.api.types.is_datetime64_any_dtype(series):
         return "datetime"
     if pd.api.types.is_bool_dtype(series):
@@ -220,7 +246,7 @@ def recommend_chart(field_type: str, cardinality: float, distribution: float) ->
         "unknown": "N/A — no data",
     }
     base = recs.get(field_type, "Bar Chart")
-    if cardinality == 1.0:
+    if cardinality == 1.0 and field_type != "identifier":
         base += " ⚠ All unique — likely ID column"
     elif cardinality < 0.01:
         base += " ⚠ Near-constant — low analytical value"
@@ -231,29 +257,87 @@ def recommend_chart(field_type: str, cardinality: float, distribution: float) ->
 # Analysis Driver
 # ---------------------------------------------------------------------------
 
+def _strict_majority_kind(series: pd.Series):
+    """
+    For a strict-mode (dtype=object) column, sniff whether it is majority-bool
+    or majority-datetime based on raw Python cell types. Returns "boolean",
+    "datetime", or None.
+    """
+    filled = series.dropna()
+    if len(filled) == 0:
+        return None
+    bool_share = filled.map(lambda v: isinstance(v, bool)).mean()
+    if bool_share > 0.5:
+        return "boolean"
+    dt_share = filled.map(lambda v: isinstance(v, (datetime, date)) and not isinstance(v, bool)).mean()
+    if dt_share > 0.5:
+        return "datetime"
+    return None
+
+
 def analyze(df: pd.DataFrame, strict_types: bool = False) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, pd.DataFrame]:
     """
     Returns (rankings_df, profiles_df, chart_recs_df, corr_matrix_df).
 
-    strict_types: when True, df arrived via load_strict() — all columns are dtype=object
-    with raw Python types. Correlation is computed by attempting numeric coercion per column
-    rather than relying on pandas dtype detection.
+    strict_types: when True, df arrived via load_strict() — columns may be dtype=object
+    with raw Python types. We pre-compute a coerced-numeric view of each object column
+    that is majority-numeric so that distribution, correlation, and type inference can
+    reason about numeric-ness despite the object dtype.
     """
+    # Pre-compute per-column numeric views and bool/datetime overrides.
+    # In standard mode the "numeric view" is just the dtype-selected numeric frame.
+    numeric_views: dict = {}
+    force_types: dict = {}
+
+    if strict_types:
+        for col in df.columns:
+            series = df[col]
+            if pd.api.types.is_numeric_dtype(series):
+                numeric_views[col] = series
+                continue
+            if pd.api.types.is_object_dtype(series):
+                kind = _strict_majority_kind(series)
+                if kind is not None:
+                    force_types[col] = kind
+                    continue
+                coerced = pd.to_numeric(series, errors="coerce")
+                if coerced.notna().sum() > 0 and coerced.notna().mean() > 0.5:
+                    numeric_views[col] = coerced
+    else:
+        for col in df.columns:
+            series = df[col]
+            if pd.api.types.is_numeric_dtype(series) and not pd.api.types.is_bool_dtype(series):
+                numeric_views[col] = series
+
+    numeric_df = pd.DataFrame(numeric_views) if numeric_views else pd.DataFrame()
+
+    if not numeric_df.empty and numeric_df.shape[1] >= 2:
+        corr_matrix = numeric_df.corr(method="pearson")
+    else:
+        corr_matrix = pd.DataFrame()
+
     rows = []
     for col in df.columns:
         series = df[col]
+        numeric_view = numeric_views.get(col)
+        force_type = force_types.get(col)
+
         completeness = score_completeness(series)
         cardinality = score_cardinality(series)
         type_consistency = score_type_consistency(series)
-        distribution = score_distribution(series)
-        correlation = score_correlation(series, df)
-        field_type = infer_field_type(series)
+        distribution = score_distribution(series, numeric_view=numeric_view)
+        correlation = score_correlation(col, corr_matrix)
+        field_type = infer_field_type(series, numeric_view=numeric_view, force_type=force_type)
 
-        # Build a human-readable type breakdown for strict mode
+        # Human-readable type breakdown for strict mode (object columns only)
         if strict_types and pd.api.types.is_object_dtype(series):
             filled = series.dropna()
             def norm(v):
-                return "numeric" if isinstance(v, (int, float)) else type(v).__name__
+                if isinstance(v, bool):
+                    return "bool"
+                if isinstance(v, (int, float)):
+                    return "numeric"
+                return type(v).__name__
             tc = filled.map(norm).value_counts()
             type_mix = ", ".join(f"{t}:{n}" for t, n in tc.items())
         else:
@@ -304,19 +388,8 @@ def analyze(df: pd.DataFrame, strict_types: bool = False) -> tuple[pd.DataFrame,
     chart_recs_df = all_df[chart_cols].copy()
     chart_recs_df = chart_recs_df.sort_values("field").reset_index(drop=True)
 
-    # For strict mode: attempt numeric coercion to build correlation matrix
-    if strict_types:
-        numeric_cols = {}
-        for col in df.columns:
-            coerced = pd.to_numeric(df[col], errors="coerce")
-            if coerced.notna().sum() > 0 and coerced.notna().mean() > 0.5:
-                numeric_cols[col] = coerced
-        numeric_df = pd.DataFrame(numeric_cols) if numeric_cols else pd.DataFrame()
-    else:
-        numeric_df = df.select_dtypes(include=[np.number])
-
-    if not numeric_df.empty and numeric_df.shape[1] >= 2:
-        corr_matrix_df = numeric_df.corr(method="pearson").round(4)
+    if not corr_matrix.empty:
+        corr_matrix_df = corr_matrix.round(4)
     else:
         corr_matrix_df = pd.DataFrame({"note": ["No numeric columns found for correlation"]})
 
@@ -382,7 +455,7 @@ def write_excel(rankings_df, profiles_df, chart_recs_df, corr_matrix_df,
                 try:
                     if cell.value:
                         max_len = max(max_len, len(str(cell.value)))
-                except:
+                except (AttributeError, TypeError):
                     pass
             ws.column_dimensions[col_letter].width = min(max(max_len + 2, min_w), max_w)
 
@@ -509,13 +582,13 @@ def write_pdf(rankings_df, profiles_df, chart_recs_df, corr_matrix_df,
     def score_color(val):
         try:
             v = float(val)
-            if v >= 0.75:
-                return GREEN
-            if v >= 0.45:
-                return YELLOW
-            return RED
-        except:
+        except (ValueError, TypeError):
             return colors.white
+        if v >= 0.75:
+            return GREEN
+        if v >= 0.45:
+            return YELLOW
+        return RED
 
     def make_table(df, col_widths=None, score_cols=None):
         data = [list(df.columns)]

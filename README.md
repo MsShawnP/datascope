@@ -64,6 +64,13 @@ cd field-story-scorer
 pip install -r requirements.txt
 ```
 
+To run the test suite:
+
+```bash
+pip install -r requirements-dev.txt
+pytest
+```
+
 ---
 
 ## Usage
@@ -94,11 +101,11 @@ By default, pandas infers column dtypes on load. A column containing 485 floats 
 `--strict-types` bypasses pandas inference entirely, reading each cell's native Python type via openpyxl. The same column now reveals its actual composition:
 
 ```
-Standard mode:   revenue_mixed   score=0.9775   type=numeric_continuous
-Strict mode:     revenue_mixed   score=0.8170   type=identifier   mix=[numeric:185, str:15]
+Standard mode:   revenue_mixed   score=0.9775   type=numeric_continuous   mix=(unavailable)
+Strict mode:     revenue_mixed   score=0.9708   type=numeric_continuous   mix=[numeric:185, str:15]
 ```
 
-The `type_mix` column is added to the Field Rankings and Chart Recommendations tabs in strict-mode output, showing the exact type breakdown for every field.
+The composite score is only modestly affected — type contamination shows up in the `type_consistency` dimension (0.925 vs 1.0), and the other four dimensions are unchanged because the 15 sentinel strings get coerced for distribution and correlation purposes. The real signal is the new **`type_mix`** column, added to the Field Rankings and Chart Recommendations tabs in strict-mode output: it surfaces the exact cell-type breakdown for every column (e.g. `revenue: numeric:200`, `customer_id: str:200`, `revenue_mixed: numeric:185, str:15`) so contamination is impossible to miss.
 
 **When to use it:** Any time a dataset has been manually edited in Excel, exported from a system that emits sentinel strings (`"N/A"`, `"TBD"`, `"—"`, `"NULL"`), or assembled from multiple sources. Standard mode is faster and sufficient for clean, system-generated data.
 
@@ -116,10 +123,10 @@ Real reports produced by running the scorer on the bundled sample inputs — com
 - Clean dataset:
   [xlsx](samples/output/sample_sales_field_report.xlsx) ·
   [pdf](samples/output/sample_sales_field_report.pdf)
-- Mixed-types, standard mode (string contamination hidden — `revenue_mixed` scores 0.9775):
+- Mixed-types, standard mode (string contamination hidden — `revenue_mixed` scores 0.9775, no `type_mix` column):
   [xlsx](samples/output/sample_mixed_types_field_report.xlsx) ·
   [pdf](samples/output/sample_mixed_types_field_report.pdf)
-- Mixed-types, `--strict-types` (string contamination exposed — `revenue_mixed` drops to 0.8170, type flips to `identifier`):
+- Mixed-types, `--strict-types` (string contamination exposed — `revenue_mixed` scores 0.9708 with `type_mix=[numeric:185, str:15]`):
   [xlsx](samples/output/sample_mixed_types_field_report_strict.xlsx) ·
   [pdf](samples/output/sample_mixed_types_field_report_strict.pdf)
 
@@ -133,9 +140,9 @@ Real reports produced by running the scorer on the bundled sample inputs — com
 
 ![Side-by-side: standard mode vs --strict-types scoring the same column](samples/output/screenshots/strict_mode_comparison.png)
 
-*The same column (`revenue_mixed`) scored two ways. On the left, standard mode reads it as numeric and gives it 0.9775 — the 15 string cells were silently converted to NaN. On the right, `--strict-types` reads each cell's actual type, scores the column at 0.817, and shows the breakdown in the new `type_mix` column.*
+*The same column (`revenue_mixed`) scored two ways. On the left, standard mode reads it as numeric and gives it 0.9775 — the 15 string cells were silently converted to NaN. On the right, `--strict-types` keeps the cells as their native Python types: the composite score drops slightly (0.9708, driven by `type_consistency` 0.925 vs 1.0), and the new `type_mix` column shows exactly which cells are off — `numeric:185, str:15`. The screenshot is rendered directly from the actual scorer outputs by `tools/render_strict_mode_comparison.py` and can be regenerated any time the numbers change.*
 
-The two mixed-types reports are the headline — same input, scored both ways. Open them side-by-side to see exactly what `--strict-types` catches.
+The two mixed-types reports are the headline — same input, scored both ways. Open them side-by-side and look at the `type_mix` column to see exactly what `--strict-types` catches.
 
 ---
 
@@ -177,10 +184,13 @@ field-story-scorer/
 ├── scorer.py               # Main CLI tool — single file, no submodules
 ├── generate_sample.py      # Generates the bundled sample inputs
 ├── requirements.txt
+├── requirements-dev.txt    # Adds pytest for the test suite
+├── pytest.ini
 ├── samples/                # Committed sample inputs and rendered outputs
 │   ├── README.md
 │   ├── input/
 │   └── output/
+├── tests/                  # pytest tests for scoring + analyze()
 └── README.md
 ```
 
@@ -193,7 +203,6 @@ field-story-scorer/
 - openpyxl ≥ 3.1
 - reportlab ≥ 4.0
 - numpy ≥ 1.24
-- scipy ≥ 1.10
 
 ---
 
