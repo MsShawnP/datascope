@@ -31,17 +31,17 @@ samples/
 | [sample_sales_field_report.pdf](output/sample_sales_field_report.pdf) | (same as above) | PDF version of the same report — landscape, color-coded score cells. |
 | [sample_mixed_types_field_report.xlsx](output/sample_mixed_types_field_report.xlsx) | `scorer.py --input samples/input/sample_mixed_types.xlsx` | **Standard mode.** `revenue_mixed` scores **0.9775** and is classified as `numeric_continuous` — the 15 string cells are invisible. This is the false-positive story. |
 | [sample_mixed_types_field_report.pdf](output/sample_mixed_types_field_report.pdf) | (same as above) | PDF of the standard-mode mixed-types run. |
-| [sample_mixed_types_field_report_strict.xlsx](output/sample_mixed_types_field_report_strict.xlsx) | `scorer.py --input samples/input/sample_mixed_types.xlsx --strict-types` | **Strict mode.** Same input, but `revenue_mixed` now scores **0.8170**, type flips to `identifier`, and a `type_mix` column shows `[numeric:185, str:15]`. The string contamination is exposed. |
-| [sample_mixed_types_field_report_strict.pdf](output/sample_mixed_types_field_report_strict.pdf) | (same as above) | PDF of the strict-mode run — open this side-by-side with the non-strict PDF to see the difference at a glance. |
+| [sample_mixed_types_field_report_strict.xlsx](output/sample_mixed_types_field_report_strict.xlsx) | `scorer.py --input samples/input/sample_mixed_types.xlsx --strict-types` | **Strict mode.** Same input. `revenue_mixed` now scores **0.9708** (type contamination shows up in `type_consistency` 0.925 vs 1.0), and the new `type_mix` column shows `[numeric:185, str:15]`. The string contamination is exposed. |
+| [sample_mixed_types_field_report_strict.pdf](output/sample_mixed_types_field_report_strict.pdf) | (same as above) | PDF of the strict-mode run — open this side-by-side with the non-strict PDF and look at the `type_mix` column. |
 
 ## The strict-mode story, in one line
 
 | Mode | Score | Type | Type breakdown |
 |---|---|---|---|
-| Standard | 0.9775 | `numeric_continuous` | (hidden by pandas inference) |
-| `--strict-types` | 0.8170 | `identifier` | `numeric:185, str:15` |
+| Standard | 0.9775 | `numeric_continuous` | *(column not present — pandas inferred away)* |
+| `--strict-types` | 0.9708 | `numeric_continuous` | `numeric:185, str:15` |
 
-Same file. Same column. Standard mode says "ship it." Strict mode says "this column has 15 sentinel strings — go talk to whoever exported it."
+Same file. Same column. Standard mode says "ship it" with no visibility into the cells. Strict mode keeps the score honest (only `type_consistency` is dinged, because the other dimensions still see legitimate numeric values for 92.5% of rows) and surfaces the new `type_mix` column so you can see exactly which cells are off — "this column has 15 sentinel strings, go talk to whoever exported it."
 
 ## Regenerating
 
