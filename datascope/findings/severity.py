@@ -13,28 +13,30 @@ of truth for severity classification (U7).
 
 from __future__ import annotations
 
+from typing import Any
+
 from datascope.models import Finding, FindingType, Severity
 
 # Numeric types that can cause silent calculation errors when mixed.
 _NUMERIC_TYPES: frozenset[str] = frozenset({"numeric", "int", "float"})
 
 
-def _is_leading_zeros(evidence: dict) -> bool:
+def _is_leading_zeros(evidence: dict[str, Any]) -> bool:
     """Return True if evidence belongs to a leading-zero finding."""
     return "leading_zero_count" in evidence
 
 
-def _is_mixed_dates(evidence: dict) -> bool:
+def _is_mixed_dates(evidence: dict[str, Any]) -> bool:
     """Return True if evidence belongs to a mixed-date finding."""
     return "formats_found" in evidence
 
 
-def _is_near_constant(evidence: dict) -> bool:
+def _is_near_constant(evidence: dict[str, Any]) -> bool:
     """Return True if evidence belongs to a near-constant cardinality finding."""
     return "top_values" in evidence
 
 
-def _is_suspected_duplicates(evidence: dict) -> bool:
+def _is_suspected_duplicates(evidence: dict[str, Any]) -> bool:
     """Return True if evidence belongs to a suspected-duplicate-ID finding."""
     return "duplicate_values" in evidence
 

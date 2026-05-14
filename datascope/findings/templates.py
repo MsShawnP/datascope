@@ -14,6 +14,8 @@ Text is plain English, readable by non-technical people (R14).
 
 from __future__ import annotations
 
+from typing import Any
+
 
 # ---------------------------------------------------------------------------
 # Helpers
@@ -45,7 +47,7 @@ def _pct(value: float | int) -> str:
 # TYPE_INCONSISTENCY
 # ---------------------------------------------------------------------------
 
-def type_inconsistency(field_name: str, evidence: dict) -> dict[str, str]:
+def type_inconsistency(field_name: str, evidence: dict[str, Any]) -> dict[str, str]:
     """Template for mixed-type findings."""
     majority = evidence.get("majority_type", "unknown")
     majority_pct = evidence.get("majority_pct", 0)
@@ -112,7 +114,7 @@ def type_inconsistency(field_name: str, evidence: dict) -> dict[str, str]:
 # SENTINEL_VALUE
 # ---------------------------------------------------------------------------
 
-def sentinel_value(field_name: str, evidence: dict) -> dict[str, str]:
+def sentinel_value(field_name: str, evidence: dict[str, Any]) -> dict[str, str]:
     """Template for sentinel-value findings."""
     sentinels = evidence.get("sentinels_found", [])
     majority_type = evidence.get("column_majority_type", "unknown")
@@ -163,7 +165,7 @@ def sentinel_value(field_name: str, evidence: dict) -> dict[str, str]:
 # FORMAT_INCONSISTENCY -- leading zeros
 # ---------------------------------------------------------------------------
 
-def leading_zeros(field_name: str, evidence: dict) -> dict[str, str]:
+def leading_zeros(field_name: str, evidence: dict[str, Any]) -> dict[str, str]:
     """Template for leading-zero inconsistency findings."""
     lz_count = evidence.get("leading_zero_count", 0)
     no_lz_count = evidence.get("no_leading_zero_count", 0)
@@ -209,7 +211,7 @@ def leading_zeros(field_name: str, evidence: dict) -> dict[str, str]:
 # FORMAT_INCONSISTENCY -- mixed dates
 # ---------------------------------------------------------------------------
 
-def mixed_dates(field_name: str, evidence: dict) -> dict[str, str]:
+def mixed_dates(field_name: str, evidence: dict[str, Any]) -> dict[str, str]:
     """Template for mixed-date-format findings."""
     formats = evidence.get("formats_found", [])
     total = evidence.get("total_date_values", 0)
@@ -258,7 +260,7 @@ def mixed_dates(field_name: str, evidence: dict) -> dict[str, str]:
 # CARDINALITY_ANOMALY -- near-constant
 # ---------------------------------------------------------------------------
 
-def near_constant(field_name: str, evidence: dict) -> dict[str, str]:
+def near_constant(field_name: str, evidence: dict[str, Any]) -> dict[str, str]:
     """Template for near-constant cardinality findings."""
     unique = evidence.get("unique_count", 0)
     total = evidence.get("total_count", 0)
@@ -310,7 +312,7 @@ def near_constant(field_name: str, evidence: dict) -> dict[str, str]:
 # CARDINALITY_ANOMALY -- suspected duplicate IDs
 # ---------------------------------------------------------------------------
 
-def suspected_duplicate_ids(field_name: str, evidence: dict) -> dict[str, str]:
+def suspected_duplicate_ids(field_name: str, evidence: dict[str, Any]) -> dict[str, str]:
     """Template for suspected-duplicate-ID findings."""
     unique = evidence.get("unique_count", 0)
     total = evidence.get("total_count", 0)

@@ -96,6 +96,9 @@ def analyze_sentinels(
             1 for v in col_values if v is not None and str(v).strip() != ""
         )
 
+        if total_non_null == 0:
+            continue
+
         # Collect sentinel hits: track original-case value and count
         sentinel_hits: Counter[str] = Counter()  # lowercase -> count
         sentinel_originals: dict[str, str] = {}  # lowercase -> first original-case
@@ -103,6 +106,8 @@ def analyze_sentinels(
             if val is None:
                 continue
             val_str = str(val)
+            if not val_str.strip():
+                continue
             val_lower = val_str.lower()
             if val_lower in sentinels:
                 sentinel_hits[val_lower] += 1
@@ -114,12 +119,11 @@ def analyze_sentinels(
 
         # 4. Frequency disambiguation: if a specific sentinel is >50%
         #    of non-null values, treat it as a legitimate category
-        if total_non_null > 0:
-            surviving: dict[str, int] = {}
-            for val_lower, count in sentinel_hits.items():
-                if count / total_non_null <= 0.50:
-                    surviving[val_lower] = count
-            sentinel_hits = Counter(surviving)
+        surviving: dict[str, int] = {}
+        for val_lower, count in sentinel_hits.items():
+            if count / total_non_null <= 0.50:
+                surviving[val_lower] = count
+        sentinel_hits = Counter(surviving)
 
         if not sentinel_hits:
             continue

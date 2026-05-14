@@ -50,6 +50,11 @@ def _infer_cell(raw: str) -> object:
     if not stripped:
         return None
 
+    # Preserve leading-zero digit strings (e.g. "00123") as strings
+    # so the leading-zero analyzer can detect the inconsistency.
+    if len(stripped) > 1 and stripped[0] == "0" and stripped.isdigit():
+        return stripped
+
     # --- int ----------------------------------------------------------
     try:
         return int(stripped)

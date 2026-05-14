@@ -157,14 +157,10 @@ def main(argv: list[str] | None = None) -> None:
         sys.exit(1)
 
     # --- load -----------------------------------------------------------
-    from datascope.loaders import load_excel, load_csv
+    from datascope.loaders import load
 
     sheet = _parse_sheet(args.sheet)
-
-    if ext == ".xlsx":
-        result = load_excel(input_path, sheet=sheet)
-    else:
-        result = load_csv(input_path)
+    result = load(input_path, sheet=sheet)
 
     # --- analyse --------------------------------------------------------
     from datascope.analyzers import (
@@ -175,12 +171,20 @@ def main(argv: list[str] | None = None) -> None:
         analyze_type_consistency,
     )
 
+    analyzers = [
+        analyze_type_consistency,
+        analyze_sentinels,
+        analyze_leading_zeros,
+        analyze_mixed_dates,
+        analyze_cardinality,
+    ]
+
     all_findings: list = []
-    all_findings.extend(analyze_type_consistency(result))
-    all_findings.extend(analyze_sentinels(result))
-    all_findings.extend(analyze_leading_zeros(result))
-    all_findings.extend(analyze_mixed_dates(result))
-    all_findings.extend(analyze_cardinality(result))
+    for analyzer in analyzers:
+        try:
+            all_findings.extend(analyzer(result))
+        except Exception as exc:
+            print(f"Warning: {analyzer.__name__} failed: {exc}", file=sys.stderr)
 
     # --- process --------------------------------------------------------
     from datascope.findings import process_findings

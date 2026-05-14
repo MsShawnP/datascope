@@ -33,6 +33,8 @@ from reportlab.platypus import (
     TableStyle,
 )
 
+from typing import Any
+
 from datascope.models import Finding, FindingType, Severity
 
 # ---------------------------------------------------------------------------
@@ -178,7 +180,7 @@ def _severity_counts(findings: list[Finding]) -> dict[Severity, int]:
 def _build_title_page(
     story: list,
     styles: dict[str, ParagraphStyle],
-    source_metadata: dict,
+    source_metadata: dict[str, Any],
     counts: dict[Severity, int],
 ) -> None:
     """Append the title page flowables to *story*."""
@@ -186,7 +188,7 @@ def _build_title_page(
     story.append(Paragraph("Data Quality Diagnostic Report", styles["title"]))
     story.append(Spacer(1, 0.1 * inch))
 
-    filename = source_metadata.get("filename", "Unknown source")
+    filename = _safe(source_metadata.get("filename", "Unknown source"))
     story.append(Paragraph(f"Source: {filename}", styles["subtitle"]))
 
     date_str = datetime.date.today().strftime("%B %d, %Y")
@@ -309,6 +311,8 @@ def _safe(text: str) -> str:
         .replace("&", "&amp;")
         .replace("<", "&lt;")
         .replace(">", "&gt;")
+        .replace('"', "&quot;")
+        .replace("'", "&#39;")
     )
 
 
@@ -448,7 +452,7 @@ def _build_field_inventory(
     story: list,
     styles: dict[str, ParagraphStyle],
     findings: list[Finding],
-    source_metadata: dict,
+    source_metadata: dict[str, Any],
 ) -> None:
     """Append the field inventory table to *story*."""
     story.append(Paragraph("Field Inventory", styles["h1"]))
@@ -544,7 +548,7 @@ def _build_field_inventory(
 
 def write_pdf(
     findings: list[Finding],
-    source_metadata: dict,
+    source_metadata: dict[str, Any],
     output_path: str | Path,
 ) -> Path:
     """Render findings into a professional PDF report.

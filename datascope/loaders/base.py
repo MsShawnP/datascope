@@ -11,7 +11,7 @@ from pathlib import Path
 from datascope.models import LoaderResult
 
 
-def load(path: str | Path) -> LoaderResult:
+def load(path: str | Path, *, sheet: str | int = 0) -> LoaderResult:
     """Load a tabular file, dispatching by extension.
 
     Supported extensions:
@@ -23,6 +23,8 @@ def load(path: str | Path) -> LoaderResult:
     ----------
     path:
         File path.  Both ``str`` and ``Path`` are accepted.
+    sheet:
+        Sheet name or 0-based index (Excel only, ignored for CSV).
 
     Returns
     -------
@@ -44,7 +46,7 @@ def load(path: str | Path) -> LoaderResult:
 
     if ext == ".xlsx":
         from datascope.loaders.excel import load_excel
-        return load_excel(path)
+        return load_excel(path, sheet=sheet)
 
     if ext == ".csv":
         from datascope.loaders.csv_loader import load_csv

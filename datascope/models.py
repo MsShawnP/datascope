@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import enum
 from dataclasses import dataclass, field
+from typing import Any
 
 import pandas as pd
 
@@ -55,7 +56,7 @@ class Finding:
 
     field_name: str
     finding_type: FindingType
-    evidence: dict = field(default_factory=dict)
+    evidence: dict[str, Any] = field(default_factory=dict)
 
     # Filled by severity classifier
     severity: Severity | None = None
@@ -78,16 +79,4 @@ class LoaderResult:
 
     dataframe: pd.DataFrame
     cell_types: dict[str, list[type]] = field(default_factory=dict)
-    source_metadata: dict = field(default_factory=dict)
-
-
-@dataclass
-class FieldProfile:
-    """Per-column profile produced by the profiler stage."""
-
-    name: str
-    completeness: float
-    unique_count: int
-    total_count: int
-    inferred_type: str
-    type_breakdown: dict[str, int] = field(default_factory=dict)
+    source_metadata: dict[str, Any] = field(default_factory=dict)

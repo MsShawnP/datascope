@@ -18,7 +18,8 @@ def load_excel(path: Path, sheet: str | int = 0) -> LoaderResult:
     """Read an ``.xlsx`` workbook cell-by-cell, preserving native Python types.
 
     Uses openpyxl with ``data_only=True`` (formula cells return their
-    computed value) and ``read_only=True`` (memory-efficient streaming).
+    last-cached value, not re-evaluated) and ``read_only=True``
+    (memory-efficient streaming).
 
     Parameters
     ----------
@@ -56,7 +57,7 @@ def load_excel(path: Path, sheet: str | int = 0) -> LoaderResult:
             cell_types={},
             source_metadata={
                 "filename": path.name,
-                "sheet": sheet_title if rows else str(sheet),
+                "sheet": sheet_title,
                 "row_count": 0,
                 "column_count": 0,
             },
@@ -68,9 +69,10 @@ def load_excel(path: Path, sheet: str | int = 0) -> LoaderResult:
         for i, h in enumerate(rows[0])
     ]
 
-    # --- data rows ------------------------------------------------------
+    # --- data rows (pad jagged rows to header width) ---------------------
+    n_cols = len(headers)
     data_rows = rows[1:]
-    data = [list(r) for r in data_rows]
+    data = [list(r) + [None] * max(0, n_cols - len(r)) for r in data_rows]
 
     df = pd.DataFrame(data, columns=headers, dtype=object)
 
@@ -78,7 +80,7 @@ def load_excel(path: Path, sheet: str | int = 0) -> LoaderResult:
     cell_types: dict[str, list[type]] = {}
     for col_idx, col_name in enumerate(headers):
         cell_types[col_name] = [
-            type(row[col_idx]) for row in data_rows
+            type(row[col_idx]) for row in data
         ]
 
     # --- source_metadata ------------------------------------------------

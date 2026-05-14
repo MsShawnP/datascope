@@ -4,7 +4,6 @@ import pandas as pd
 import pytest
 
 from datascope.models import (
-    FieldProfile,
     Finding,
     FindingType,
     LoaderResult,
@@ -152,36 +151,3 @@ class TestLoaderResult:
             cell_types={"mixed": [int, str, float]},
         )
         assert lr.cell_types["mixed"] == [int, str, float]
-
-
-# ---------------------------------------------------------------------------
-# FieldProfile dataclass
-# ---------------------------------------------------------------------------
-
-class TestFieldProfile:
-
-    def test_happy_path(self):
-        fp = FieldProfile(
-            name="email",
-            completeness=0.95,
-            unique_count=950,
-            total_count=1000,
-            inferred_type="string",
-            type_breakdown={"str": 950, "NoneType": 50},
-        )
-        assert fp.name == "email"
-        assert fp.completeness == 0.95
-        assert fp.unique_count == 950
-        assert fp.total_count == 1000
-        assert fp.inferred_type == "string"
-        assert fp.type_breakdown == {"str": 950, "NoneType": 50}
-
-    def test_type_breakdown_defaults_to_empty_dict(self):
-        fp = FieldProfile(
-            name="id",
-            completeness=1.0,
-            unique_count=100,
-            total_count=100,
-            inferred_type="integer",
-        )
-        assert fp.type_breakdown == {}

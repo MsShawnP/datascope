@@ -163,7 +163,7 @@ class TestCsvPipeline:
         findings, pdf_path = _run_full_pipeline(csv_path, out_dir)
         assert pdf_path.exists()
         # Should detect at least one issue (sentinel or mixed types)
-        assert len(findings) >= 0  # may or may not find issues depending on analysis
+        assert len(findings) > 0  # data has sentinels and mixed types
 
     def test_empty_csv_pipeline_no_crash(self, tmp_path):
         csv_path = _write_csv(tmp_path, """\

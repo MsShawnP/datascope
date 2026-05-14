@@ -35,5 +35,5 @@ def process_findings(findings: list[Finding]) -> list[Finding]:
         finding.severity = classify_severity(finding)
         compose_finding(finding)
 
-    findings.sort(key=lambda f: (-f.severity.value, f.field_name))
+    findings.sort(key=lambda f: (-(f.severity.value if f.severity is not None else 0), f.field_name))
     return findings

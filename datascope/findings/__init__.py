@@ -8,6 +8,8 @@ produced by the analyzers with:
   in an assumption-vs-reality framing.
 """
 
+from __future__ import annotations
+
 from datascope.findings.severity import classify_severity
 from datascope.findings.composer import compose_finding
 from datascope.findings.pipeline import process_findings

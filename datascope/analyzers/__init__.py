@@ -1,5 +1,7 @@
 """datascope.analyzers -- detectors that produce Finding objects."""
 
+from __future__ import annotations
+
 from datascope.analyzers.type_consistency import analyze_type_consistency
 from datascope.analyzers.sentinel import analyze_sentinels
 from datascope.analyzers.format_check import analyze_leading_zeros, analyze_mixed_dates
