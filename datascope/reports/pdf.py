@@ -140,12 +140,12 @@ def _build_styles() -> dict[str, ParagraphStyle]:
         "summary_number": ParagraphStyle(
             "ds_summary_number", parent=base["Normal"],
             fontSize=28, alignment=TA_CENTER,
-            fontName="Helvetica-Bold", spaceAfter=2,
+            fontName="Helvetica-Bold", leading=34, spaceAfter=0,
         ),
         "summary_label": ParagraphStyle(
             "ds_summary_label", parent=base["Normal"],
-            fontSize=9, alignment=TA_CENTER,
-            textColor=colors.grey, spaceAfter=2,
+            fontSize=10, alignment=TA_CENTER,
+            fontName="Helvetica-Bold", spaceAfter=0,
         ),
         "card_label": ParagraphStyle(
             "ds_card_label", parent=base["Normal"],
@@ -209,15 +209,25 @@ def _build_title_page(
         Paragraph("Warning", styles["summary_label"]),
         Paragraph("Info", styles["summary_label"]),
     ]]
-    summary_tbl = Table(summary_data, colWidths=[1.8 * inch] * 3)
+    summary_tbl = Table(
+        summary_data,
+        colWidths=[1.8 * inch] * 3,
+        rowHeights=[0.5 * inch, 0.25 * inch],
+    )
     summary_tbl.setStyle(TableStyle([
         ("ALIGN", (0, 0), (-1, -1), "CENTER"),
-        ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+        ("VALIGN", (0, 0), (-1, 0), "BOTTOM"),
+        ("VALIGN", (0, 1), (-1, 1), "TOP"),
         ("TEXTCOLOR", (0, 0), (0, 0), CRITICAL_BG),
         ("TEXTCOLOR", (1, 0), (1, 0), WARNING_BG),
         ("TEXTCOLOR", (2, 0), (2, 0), INFO_BG),
-        ("TOPPADDING", (0, 0), (-1, -1), 4),
-        ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
+        ("TEXTCOLOR", (0, 1), (0, 1), CRITICAL_BG),
+        ("TEXTCOLOR", (1, 1), (1, 1), WARNING_BG),
+        ("TEXTCOLOR", (2, 1), (2, 1), INFO_BG),
+        ("TOPPADDING", (0, 0), (-1, 0), 6),
+        ("BOTTOMPADDING", (0, 0), (-1, 0), 2),
+        ("TOPPADDING", (0, 1), (-1, 1), 0),
+        ("BOTTOMPADDING", (0, 1), (-1, 1), 6),
     ]))
     story.append(summary_tbl)
 
