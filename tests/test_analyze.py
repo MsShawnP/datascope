@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from scorer import analyze
+from datascope._legacy import analyze
 
 
 def _strict_frame_from_records(records, columns):

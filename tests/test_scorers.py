@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from scorer import (
+from datascope._legacy import (
     WEIGHTS,
     composite_score,
     infer_field_type,
