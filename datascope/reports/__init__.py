@@ -1,0 +1,7 @@
+"""datascope.reports -- render findings into deliverable report formats."""
+
+from datascope.reports.pdf import write_pdf
+
+__all__ = [
+    "write_pdf",
+]
