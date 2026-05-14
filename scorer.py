@@ -60,7 +60,11 @@ def load_strict(input_path: str, sheet) -> pd.DataFrame:
 
     headers = [str(h) if h is not None else f"col_{i}" for i, h in enumerate(rows[0])]
     data = [list(r) for r in rows[1:]]
-    return pd.DataFrame(data, columns=headers)
+    # dtype=object is what makes strict mode strict: without it, pandas would
+    # infer float64 / string / datetime64 per column and the type_mix breakdown
+    # would only ever populate for genuinely-mixed columns. Passing dtype=object
+    # preserves each cell's raw Python type (int, float, str, bool, datetime).
+    return pd.DataFrame(data, columns=headers, dtype=object)
 
 
 # ---------------------------------------------------------------------------

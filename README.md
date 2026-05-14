@@ -105,7 +105,7 @@ Standard mode:   revenue_mixed   score=0.9775   type=numeric_continuous   mix=(u
 Strict mode:     revenue_mixed   score=0.9708   type=numeric_continuous   mix=[numeric:185, str:15]
 ```
 
-The composite score is only modestly affected — type contamination shows up in the `type_consistency` dimension (0.925 vs 1.0), and the other four dimensions are unchanged because the 15 sentinel strings get coerced for distribution and correlation purposes. The real signal is the new **`type_mix`** column, added to the Field Rankings and Chart Recommendations tabs in strict-mode output: it surfaces the exact cell-type breakdown for every field so contamination is impossible to miss.
+The composite score is only modestly affected — type contamination shows up in the `type_consistency` dimension (0.925 vs 1.0), and the other four dimensions are unchanged because the 15 sentinel strings get coerced for distribution and correlation purposes. The real signal is the new **`type_mix`** column, added to the Field Rankings and Chart Recommendations tabs in strict-mode output: it surfaces the exact cell-type breakdown for every column (e.g. `revenue: numeric:200`, `customer_id: str:200`, `revenue_mixed: numeric:185, str:15`) so contamination is impossible to miss.
 
 **When to use it:** Any time a dataset has been manually edited in Excel, exported from a system that emits sentinel strings (`"N/A"`, `"TBD"`, `"—"`, `"NULL"`), or assembled from multiple sources. Standard mode is faster and sufficient for clean, system-generated data.
 

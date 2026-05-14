@@ -10,12 +10,17 @@ Usage:
     python tools/render_strict_mode_comparison.py
 """
 
+import sys
 from pathlib import Path
 
 from PIL import Image, ImageDraw, ImageFont
 
 ROOT = Path(__file__).resolve().parent.parent
 OUT_PATH = ROOT / "samples" / "output" / "screenshots" / "strict_mode_comparison.png"
+
+# Make `scorer` importable so we can sanity-check the hardcoded numbers below
+# against what the live code actually produces on the bundled sample.
+sys.path.insert(0, str(ROOT))
 
 NAVY = (31, 56, 100)
 LIGHT_BLUE = (217, 225, 242)
@@ -127,8 +132,8 @@ def main():
     strict_rows = [
         [1, "revenue",       "1.0000", "numeric_continuous",  0, 200, "numeric:200"],
         [2, "revenue_mixed", "0.9708", "numeric_continuous",  0, 186, "numeric:185, str:15"],
-        [3, "customer_id",   "0.7750", "identifier",          0, 200, "str:200"],
-        [4, "region",        "0.6287", "categorical_low",     0,   5, "str:200"],
+        [3, "customer_id",   "0.8500", "identifier",          0, 200, "str:200"],
+        [4, "region",        "0.7036", "categorical_low",     0,   5, "str:200"],
     ]
     strict_widths = [50, 130, 130, 170, 90, 110, 175]
 
@@ -195,6 +200,50 @@ def main():
     OUT_PATH.parent.mkdir(parents=True, exist_ok=True)
     img.save(OUT_PATH, format="PNG")
     print(f"Wrote {OUT_PATH.relative_to(ROOT)}  ({img.size[0]}×{img.size[1]})")
+
+    _verify_against_live_scorer(standard_rows, strict_rows)
+
+
+def _verify_against_live_scorer(standard_rows, strict_rows):
+    """Run the scorer on the bundled sample and warn if any hardcoded row
+    diverges from what the live code produces. Keeps the script honest."""
+    sample = ROOT / "samples" / "input" / "sample_mixed_types.xlsx"
+    if not sample.exists():
+        print(f"  (skip verification — {sample.relative_to(ROOT)} not present)")
+        return
+    try:
+        import pandas as pd
+        from scorer import analyze, load_strict
+    except ImportError as e:
+        print(f"  (skip verification — {e})")
+        return
+
+    std_actual, _, _, _ = analyze(pd.read_excel(sample), strict_types=False)
+    strict_actual, _, _, _ = analyze(load_strict(str(sample), 0), strict_types=True)
+
+    mismatches = []
+    for table_name, hardcoded, actual in (
+        ("standard", standard_rows, std_actual),
+        ("strict", strict_rows, strict_actual),
+    ):
+        for row in hardcoded:
+            field, hc_score = row[1], row[2]
+            actual_row = actual[actual["field"] == field]
+            if actual_row.empty:
+                mismatches.append(f"{table_name}/{field}: missing in actual output")
+                continue
+            live_score = f"{float(actual_row.iloc[0]['composite_score']):.4f}"
+            if live_score != hc_score:
+                mismatches.append(
+                    f"{table_name}/{field}: hardcoded {hc_score} vs live {live_score}"
+                )
+
+    if mismatches:
+        print("  WARNING: hardcoded rows are stale — rerender after updating:")
+        for m in mismatches:
+            print(f"    - {m}")
+    else:
+        print("  Verified against live scorer output ✓")
 
 
 if __name__ == "__main__":
