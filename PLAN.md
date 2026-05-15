@@ -142,7 +142,7 @@ Goal: Deepen the technical moat and expand the addressable audience.
 - After loading, check `row_count * column_count`; warn if > 500K cells; abort if > 5M cells (configurable via `--max-rows`)
 - Done when: `datascope huge_file.csv` prints a warning at 500K cells and aborts at 5M with a clear message
 
-### 4B: Regex pre-filter for CSV datetime inference
+### 4B: Regex pre-filter for CSV datetime inference ✓
 - Depends on: none
 - Port `_DATE_LIKE_RE` from format_check.py:139 to csv_loader.py's `_infer_cell`; skip strptime loop if regex doesn't match
 - Done when: benchmark on a 100K-row CSV of text strings shows >5x speedup vs. current; all existing tests pass
@@ -160,19 +160,19 @@ Goal: Deepen the technical moat and expand the addressable audience.
 - Template in templates.py, severity rule in severity.py
 - Done when: running on a dataset with a 40%-null column produces a finding with assumption/reality/impact text
 
-### 4E: Add annotated Excel output
+### 4E: Add annotated Excel output ✓
 - Depends on: none (but benefits from 3A for clean finding types)
 - New `datascope/reports/annotated_excel.py` — copies input file, highlights problem cells with conditional formatting, adds a "Findings" sheet
 - Wire to `--format annotated-excel` in cli.py
 - Done when: `datascope file.xlsx --format annotated-excel` produces a copy of the input with problem cells highlighted in red/amber/blue
 
-### 4F: Add Parquet input support
+### 4F: Add Parquet input support ✓
 - Depends on: none
 - New `datascope/loaders/parquet.py` — reads via pyarrow, maps Arrow types to Python types for cell_types
 - Add `pyarrow` as optional dependency (`pip install datascope[parquet]`)
 - Done when: `datascope data.parquet` produces a diagnostic report; cell_types correctly maps Arrow schema types
 
-### 4G: Stream-process loaders
+### 4G: Stream-process CSV loader ✓
 - Depends on: 4A (size guard provides fallback for unsupported streaming cases)
 - Refactor excel.py and csv_loader.py to build DataFrame + cell_types in a single streaming pass without intermediate `list()` materialization
 - Done when: benchmark on a 500K-row file shows <500MB peak memory (vs. current ~1.5GB); all existing tests pass
