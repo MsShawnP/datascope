@@ -16,7 +16,6 @@ from __future__ import annotations
 
 from typing import Any
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
@@ -118,7 +117,6 @@ def sentinel_value(field_name: str, evidence: dict[str, Any]) -> dict[str, str]:
     """Template for sentinel-value findings."""
     sentinels = evidence.get("sentinels_found", [])
     majority_type = evidence.get("column_majority_type", "unknown")
-    total = evidence.get("total_non_null", 0)
     sentinel_pct = evidence.get("sentinel_pct", 0)
 
     sentinel_examples = [s.get("value", "?") for s in sentinels]

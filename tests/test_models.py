@@ -1,7 +1,6 @@
 """Tests for datascope.models — the core data structures."""
 
 import pandas as pd
-import pytest
 
 from datascope.models import (
     Finding,
@@ -9,7 +8,6 @@ from datascope.models import (
     LoaderResult,
     Severity,
 )
-
 
 # ---------------------------------------------------------------------------
 # Severity enum

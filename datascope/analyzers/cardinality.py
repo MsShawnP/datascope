@@ -17,7 +17,6 @@ from collections import Counter
 
 from datascope.models import Finding, FindingType, LoaderResult
 
-
 # ---------------------------------------------------------------------------
 # Thresholds
 # ---------------------------------------------------------------------------

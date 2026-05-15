@@ -6,7 +6,6 @@ import textwrap
 from datetime import datetime
 from pathlib import Path
 
-import pandas as pd
 import pytest
 
 from datascope.loaders import load, load_csv, load_excel

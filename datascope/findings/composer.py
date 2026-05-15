@@ -6,9 +6,8 @@ five text fields onto the Finding in place.
 
 from __future__ import annotations
 
-from datascope.models import Finding, FindingType
 from datascope.findings import templates
-
+from datascope.models import Finding, FindingType
 
 _TEMPLATE_MAP = {
     FindingType.TYPE_INCONSISTENCY: templates.type_inconsistency,

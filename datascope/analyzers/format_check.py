@@ -12,9 +12,8 @@ from __future__ import annotations
 import re
 from datetime import datetime
 
-from datascope.models import Finding, FindingType, LoaderResult
 from datascope.analyzers.type_consistency import normalize_type
-
+from datascope.models import Finding, FindingType, LoaderResult
 
 # ---------------------------------------------------------------------------
 # Leading-zero detector

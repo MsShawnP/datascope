@@ -11,7 +11,6 @@ from datascope.analyzers.sentinel import (
 )
 from datascope.models import FindingType, LoaderResult
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

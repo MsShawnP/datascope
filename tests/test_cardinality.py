@@ -8,7 +8,6 @@ import pytest
 from datascope.analyzers.cardinality import analyze_cardinality
 from datascope.models import FindingType, LoaderResult
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

@@ -14,9 +14,8 @@ from __future__ import annotations
 
 from collections import Counter
 
-from datascope.models import Finding, FindingType, LoaderResult
 from datascope.analyzers.type_consistency import normalize_type
-
+from datascope.models import Finding, FindingType, LoaderResult
 
 # ---------------------------------------------------------------------------
 # Default sentinel list

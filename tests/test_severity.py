@@ -2,11 +2,8 @@
 
 from __future__ import annotations
 
-import pytest
-
 from datascope.findings.severity import classify_severity
 from datascope.models import Finding, FindingType, Severity
-
 
 # ---------------------------------------------------------------------------
 # Helpers

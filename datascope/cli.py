@@ -146,7 +146,6 @@ def _format_summary(findings: list, source_metadata: dict, output_path: Path) ->
 
 def _write_json(findings: list, source_metadata: dict, output_path: Path) -> None:
     """Write findings as structured JSON."""
-    from datascope.models import Severity
 
     counts: dict[str, int] = {"critical": 0, "warning": 0, "info": 0, "total": 0}
     for f in findings:

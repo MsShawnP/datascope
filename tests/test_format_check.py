@@ -11,7 +11,6 @@ from datascope.analyzers.format_check import (
 )
 from datascope.models import FindingType, LoaderResult
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

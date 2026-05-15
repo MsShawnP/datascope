@@ -7,9 +7,9 @@ for report output.
 
 from __future__ import annotations
 
-from datascope.models import Finding
-from datascope.findings.severity import classify_severity
 from datascope.findings.composer import compose_finding
+from datascope.findings.severity import classify_severity
+from datascope.models import Finding
 
 
 def process_findings(findings: list[Finding]) -> list[Finding]:

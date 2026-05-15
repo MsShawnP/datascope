@@ -11,7 +11,6 @@ from datascope.analyzers.type_consistency import (
 )
 from datascope.models import FindingType, LoaderResult
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

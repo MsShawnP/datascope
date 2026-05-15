@@ -11,7 +11,7 @@ more :class:`~datascope.models.Finding` instances.  The pipeline runner
 
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 from datascope.models import Finding, LoaderResult
 

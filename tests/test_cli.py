@@ -100,7 +100,7 @@ class TestHappyPathXlsx:
     def test_analyze_xlsx_creates_pdf(self, capsys, tmp_path):
         out_dir = tmp_path / "reports"
         main([str(SAMPLE_XLSX), "--output-dir", str(out_dir)])
-        captured = capsys.readouterr()
+        capsys.readouterr()
 
         pdf = out_dir / "sample_mixed_types_diagnostic.pdf"
         assert pdf.exists()
@@ -200,7 +200,7 @@ class TestSheetArgument:
     def test_sheet_by_index(self, capsys, tmp_path):
         out_dir = tmp_path / "reports"
         main([str(SAMPLE_XLSX), "--sheet", "0", "--output-dir", str(out_dir)])
-        captured = capsys.readouterr()
+        capsys.readouterr()
         assert (out_dir / "sample_mixed_types_diagnostic.pdf").exists()
 
 

@@ -16,7 +16,6 @@ from typing import Any
 
 from datascope.models import Finding, FindingType, LoaderResult
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

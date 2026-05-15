@@ -9,7 +9,6 @@ from datascope.findings.pipeline import process_findings
 from datascope.findings.severity import classify_severity
 from datascope.models import Finding, FindingType, Severity
 
-
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------

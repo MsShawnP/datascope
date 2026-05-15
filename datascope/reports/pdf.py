@@ -16,9 +16,10 @@ from __future__ import annotations
 import datetime
 from collections import defaultdict
 from pathlib import Path
+from typing import Any
 
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER, TA_LEFT, TA_RIGHT
+from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.pagesizes import letter
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import inch
@@ -32,8 +33,6 @@ from reportlab.platypus import (
     Table,
     TableStyle,
 )
-
-from typing import Any
 
 from datascope.models import Finding, FindingType, Severity
 
