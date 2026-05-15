@@ -1,5 +1,24 @@
 # Handoff
 
+## Session — 2026-05-15 (Move 4 + tag v2.2.0)
+
+**Phase:** Execution complete — all 25 sub-tasks done
+**Goal:** Execute Move 4 (GROW) — the final 8 tasks from the improvement plan, then tag v2.2.0.
+**Completed:**
+- 4A: --max-rows safety guard (warn 500K, abort 5M, configurable)
+- 4D: Missing-value pattern analyzer with null distribution detection (13 tests)
+- 4H: pip-audit in CI
+- 4C: Self-contained HTML report output
+- 4B: Regex pre-filter for CSV datetime inference
+- 4G: CSV loader refactored to single-pass streaming
+- 4F: Parquet input via pyarrow optional dependency
+- 4E: Annotated Excel output with severity-colored cells
+- Tagged and published v2.2.0 to PyPI
+**Tried, didn't work:** Nothing notable
+**State:** All 25 improvement plan tasks complete. v2.2.0 live on PyPI. 283 tests, 7 analyzers, 5 output formats, 3 input formats.
+**Next concrete action:** Project improvement plan is fully executed. Future work is greenfield — new analyzers, new formats, or new features based on user feedback.
+**Blockers:** None
+
 ## Session — 2026-05-15
 
 **Phase:** Execution (Moves 1-3 of improvement plan)

@@ -12,6 +12,14 @@ Promoted LEADING_ZEROS, MIXED_DATES, NEAR_CONSTANT, DUPLICATE_IDS from implicit 
 
 This eliminated 6 dispatch sites across severity.py, composer.py, and pdf.py that inspected magic dict keys like `"leading_zero_count" in evidence`. New finding types must be added as enum values with corresponding template, severity rule, and PDF label — not smuggled through evidence keys.
 
+## 2026-05-15: HTML reports use inline CSS, no Jinja2
+
+HTML report is a single self-contained file with all CSS inlined. No template engine dependency — just f-strings and `html.escape()`. This keeps the dependency footprint minimal (Jinja2 comes via pandas but we don't rely on it) and means the HTML file works offline, in email attachments, or anywhere a browser exists.
+
+## 2026-05-15: Parquet support as optional extra, not core dependency
+
+pyarrow is large (~200MB installed). Making it a core dependency would bloat install for users who only work with CSV/Excel. Instead, it's behind `pip install datascope-dq[parquet]`. The loader raises a clear `ImportError` with install instructions if pyarrow is missing.
+
 ## 2026-05-15: PEP 639 license format — drop legacy classifier
 
 Modern setuptools (isolated build env) rejects the `License :: OSI Approved :: MIT License` classifier when `license = "MIT"` is also present. Removed the classifier, keeping only the PEP 639 `license` string field. Future classifiers should not include license entries.
