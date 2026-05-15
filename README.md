@@ -12,6 +12,7 @@ datascope finds these problems, explains what's wrong in plain English, and tell
 |---|---|---|
 | **Mixed types** | 485 numbers + 15 strings in a "numeric" column | Critical |
 | **Sentinel values** | "N/A", "TBD", "pending" hiding in numeric data | Critical |
+| **Missing values** | 40% of a column is blank — aggregations silently exclude those rows | Warning |
 | **Leading-zero inconsistency** | "00123" alongside "456" — keys that won't match | Warning |
 | **Mixed date formats** | "01/15/2026" and "2026-01-15" in the same column | Warning |
 | **Suspected duplicate IDs** | 98% unique in an ID column — the other 2% will fan out joins | Warning |
@@ -25,6 +26,12 @@ Each finding is expressed as **assumption vs. reality**: what the data *appears*
 
 ```bash
 pip install datascope-dq
+```
+
+For Parquet file support:
+
+```bash
+pip install datascope-dq[parquet]
 ```
 
 Or install from source:
@@ -46,11 +53,46 @@ datascope data.xlsx
 # Analyze a CSV
 datascope sales_export.csv
 
+# Analyze a Parquet file (requires pyarrow)
+datascope data.parquet
+
 # Specify a sheet and output directory
 datascope data.xlsx --sheet Revenue --output-dir ./client_reports
 ```
 
-The tool produces a PDF diagnostic report and prints a summary to stdout:
+### Output Formats
+
+```bash
+# PDF report (default)
+datascope data.xlsx
+
+# Structured JSON for pipeline integration
+datascope data.xlsx --format json
+
+# Self-contained HTML report
+datascope data.xlsx --format html
+
+# Annotated Excel with highlighted problem cells
+datascope data.xlsx --format annotated-excel
+
+# PDF + JSON together
+datascope data.xlsx --format both
+```
+
+### CLI Flags
+
+```bash
+# Quiet mode — exit code only (0 = no critical, 1 = critical findings)
+datascope data.xlsx --quiet
+
+# Verbose mode — full tracebacks on analyzer failures
+datascope data.xlsx --verbose
+
+# Limit row count (default: warn at 500K cells, abort at 5M)
+datascope huge_file.csv --max-rows 100000
+```
+
+### Example Output
 
 ```
 datascope: Analyzing sample_mixed_types.xlsx...
@@ -72,7 +114,7 @@ Report saved: reports/sample_mixed_types_diagnostic.pdf
 
 ## The Report
 
-The PDF report is structured for non-technical readers — no jargon, no composite scores, no unexplained metrics.
+Reports are structured for non-technical readers — no jargon, no composite scores, no unexplained metrics.
 
 **Executive Summary** — overall health assessment, finding counts by severity, top critical issues highlighted.
 
@@ -98,10 +140,10 @@ datascope reads each cell's actual Python type via openpyxl (for Excel) or raw-s
 The analysis pipeline:
 
 1. **Load** — read with cell-level type preservation (no silent coercion)
-2. **Detect** — five analyzers scan for type inconsistencies, sentinels, format issues, and cardinality anomalies
+2. **Detect** — seven analyzers scan for type inconsistencies, sentinels, missing values, format issues, and cardinality anomalies
 3. **Classify** — severity assigned by downstream impact (critical = silent data loss, warning = likely misinterpretation, info = worth noting)
 4. **Compose** — plain-English narrative generated for each finding
-5. **Report** — professional PDF rendered with reportlab
+5. **Report** — output as PDF, HTML, JSON, or annotated Excel
 
 ---
 
@@ -110,8 +152,8 @@ The analysis pipeline:
 | Level | Meaning | Examples |
 |---|---|---|
 | **Critical** | Silent data loss or incorrect calculations will occur | Mixed types in numeric columns; sentinel values pandas drops without warning |
-| **Warning** | Key mismatches or misinterpretation likely | Leading-zero stripping; ambiguous date formats; duplicate IDs |
-| **Info** | Worth noting, no direct downstream breakage | Near-constant columns; unusual cardinality |
+| **Warning** | Key mismatches or misinterpretation likely | Leading-zero stripping; ambiguous date formats; duplicate IDs; high null rates |
+| **Info** | Worth noting, no direct downstream breakage | Near-constant columns; moderate missing values |
 
 ---
 
@@ -119,23 +161,27 @@ The analysis pipeline:
 
 ```
 datascope/
-├── loaders/          # Excel and CSV with cell-level type tracking
-│   ├── excel.py      # openpyxl-based, preserves per-cell Python types
-│   ├── csv_loader.py # Raw string inference (None → int → float → bool → datetime → str)
-│   └── base.py       # Extension-based dispatch
-├── analyzers/        # Five detectors, each returns list[Finding]
+├── loaders/            # Excel, CSV, and Parquet with cell-level type tracking
+│   ├── excel.py        # openpyxl-based, preserves per-cell Python types
+│   ├── csv_loader.py   # Raw string inference with regex-accelerated datetime detection
+│   ├── parquet.py      # Arrow schema → Python type mapping (optional pyarrow)
+│   └── base.py         # Extension-based dispatch
+├── analyzers/          # Seven detectors, each returns list[Finding]
 │   ├── type_consistency.py
 │   ├── sentinel.py
-│   ├── format_check.py
-│   └── cardinality.py
-├── findings/         # Severity classifier + NL template engine
-│   ├── severity.py   # Impact-based classification rules
-│   ├── templates.py  # Plain-English templates per finding sub-type
-│   ├── composer.py   # Template dispatch
-│   └── pipeline.py   # classify → compose → sort
+│   ├── format_check.py # Leading zeros + mixed dates
+│   ├── cardinality.py  # Near-constant + duplicate IDs
+│   └── missing_values.py
+├── findings/           # Severity classifier + NL template engine
+│   ├── severity.py     # Impact-based classification rules
+│   ├── templates.py    # Plain-English templates per finding type
+│   ├── composer.py     # Template dispatch
+│   └── pipeline.py     # classify → compose → sort
 ├── reports/
-│   └── pdf.py        # Professional PDF with reportlab
-└── cli.py            # argparse CLI, pipeline orchestration
+│   ├── pdf.py          # Professional PDF with reportlab
+│   ├── html.py         # Self-contained HTML with inline CSS
+│   └── annotated_excel.py  # Highlighted cells + findings sheet
+└── cli.py              # argparse CLI, pipeline orchestration
 ```
 
 ---
@@ -147,6 +193,7 @@ datascope/
 - openpyxl >= 3.1
 - reportlab >= 4.0
 - defusedxml >= 0.7
+- pyarrow >= 12.0 *(optional, for Parquet support)*
 
 ---
 
