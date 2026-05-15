@@ -137,7 +137,7 @@ Goal: Engineers can integrate datascope into pipelines; consultants still get th
 
 Goal: Deepen the technical moat and expand the addressable audience.
 
-### 4A: Add `--max-rows` / file size guard
+### 4A: Add `--max-rows` / file size guard ✓
 - Depends on: none
 - After loading, check `row_count * column_count`; warn if > 500K cells; abort if > 5M cells (configurable via `--max-rows`)
 - Done when: `datascope huge_file.csv` prints a warning at 500K cells and aborts at 5M with a clear message
@@ -147,13 +147,13 @@ Goal: Deepen the technical moat and expand the addressable audience.
 - Port `_DATE_LIKE_RE` from format_check.py:139 to csv_loader.py's `_infer_cell`; skip strptime loop if regex doesn't match
 - Done when: benchmark on a 100K-row CSV of text strings shows >5x speedup vs. current; all existing tests pass
 
-### 4C: Add HTML report option
+### 4C: Add HTML report option ✓
 - Depends on: 3A (clean enum types), 3C (JSON output as data source for HTML)
 - New `datascope/reports/html.py` — Jinja2 template rendering the same finding data as the PDF
 - Wire to `--format html` in cli.py
 - Done when: `datascope file.xlsx --format html` produces a self-contained HTML file that opens in browser with styled finding cards
 
-### 4D: Add missing-value pattern analyzer
+### 4D: Add missing-value pattern analyzer ✓
 - Depends on: 3A (new FindingType enum value: `MISSING_VALUE_PATTERN`)
 - New analyzer in `datascope/analyzers/missing_values.py`
 - Detects: columns with >N% nulls, row-level patterns (all nulls in a row = likely empty row), correlated missingness
@@ -177,7 +177,7 @@ Goal: Deepen the technical moat and expand the addressable audience.
 - Refactor excel.py and csv_loader.py to build DataFrame + cell_types in a single streaming pass without intermediate `list()` materialization
 - Done when: benchmark on a 500K-row file shows <500MB peak memory (vs. current ~1.5GB); all existing tests pass
 
-### 4H: Lock file + pip audit in CI
+### 4H: pip audit in CI ✓
 - Depends on: 3E (CI must exist)
 - Generate `requirements.lock` via `pip-compile` or `uv pip compile`
 - Add `pip audit` step to CI workflow
