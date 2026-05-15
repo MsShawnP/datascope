@@ -34,8 +34,10 @@ class FindingType(enum.Enum):
 
     TYPE_INCONSISTENCY = "type_inconsistency"
     SENTINEL_VALUE = "sentinel_value"
-    FORMAT_INCONSISTENCY = "format_inconsistency"
-    CARDINALITY_ANOMALY = "cardinality_anomaly"
+    LEADING_ZEROS = "leading_zeros"
+    MIXED_DATES = "mixed_dates"
+    NEAR_CONSTANT = "near_constant"
+    DUPLICATE_IDS = "duplicate_ids"
 
 
 # ---------------------------------------------------------------------------

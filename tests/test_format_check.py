@@ -79,7 +79,7 @@ class TestAE2ScenarioLeadingZeros:
 
     def test_finding_type(self, ae2_result):
         finding = analyze_leading_zeros(ae2_result)[0]
-        assert finding.finding_type is FindingType.FORMAT_INCONSISTENCY
+        assert finding.finding_type is FindingType.LEADING_ZEROS
 
     def test_severity_is_none(self, ae2_result):
         """Severity is assigned later by the classifier, not the detector."""
@@ -217,7 +217,7 @@ class TestMixedDateFormats:
 
     def test_finding_type(self, result):
         finding = analyze_mixed_dates(result)[0]
-        assert finding.finding_type is FindingType.FORMAT_INCONSISTENCY
+        assert finding.finding_type is FindingType.MIXED_DATES
 
     def test_severity_is_none(self, result):
         finding = analyze_mixed_dates(result)[0]

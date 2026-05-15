@@ -92,7 +92,7 @@ class TestComposeLeadingZeros:
     @pytest.fixture()
     def finding(self) -> Finding:
         f = _make_finding(
-            FindingType.FORMAT_INCONSISTENCY,
+            FindingType.LEADING_ZEROS,
             {
                 "leading_zero_count": 10,
                 "no_leading_zero_count": 40,
@@ -148,7 +148,7 @@ class TestProcessFindingsSorting:
         # 5 WARNING (leading zeros)
         for i in range(5):
             findings.append(_make_finding(
-                FindingType.FORMAT_INCONSISTENCY,
+                FindingType.LEADING_ZEROS,
                 {
                     "leading_zero_count": 5,
                     "no_leading_zero_count": 15,
@@ -162,7 +162,7 @@ class TestProcessFindingsSorting:
         # 2 INFO (near-constant)
         for i in range(2):
             findings.append(_make_finding(
-                FindingType.CARDINALITY_ANOMALY,
+                FindingType.NEAR_CONSTANT,
                 {
                     "unique_count": 1,
                     "total_count": 1000,
@@ -245,7 +245,7 @@ class TestComposeNearConstant:
 
     def test_near_constant_info_with_text(self):
         f = _make_finding(
-            FindingType.CARDINALITY_ANOMALY,
+            FindingType.NEAR_CONSTANT,
             {
                 "unique_count": 2,
                 "total_count": 5000,
@@ -273,7 +273,7 @@ class TestComposeSuspectedDuplicates:
 
     def test_duplicates_warning_with_text(self):
         f = _make_finding(
-            FindingType.CARDINALITY_ANOMALY,
+            FindingType.DUPLICATE_IDS,
             {
                 "unique_count": 980,
                 "total_count": 1000,
@@ -298,7 +298,7 @@ class TestComposeMixedDates:
 
     def test_mixed_dates_warning_with_text(self):
         f = _make_finding(
-            FindingType.FORMAT_INCONSISTENCY,
+            FindingType.MIXED_DATES,
             {
                 "formats_found": ["%Y-%m-%d", "%m/%d/%Y", "%d/%m/%Y"],
                 "examples_per_format": {
@@ -364,7 +364,7 @@ class TestEdgeCaseMinimalEvidence:
 
     def test_leading_zeros_empty_evidence(self):
         f = _make_finding(
-            FindingType.FORMAT_INCONSISTENCY,
+            FindingType.LEADING_ZEROS,
             {"leading_zero_count": 0},
         )
         compose_finding(f)
@@ -372,7 +372,7 @@ class TestEdgeCaseMinimalEvidence:
 
     def test_mixed_dates_empty_evidence(self):
         f = _make_finding(
-            FindingType.FORMAT_INCONSISTENCY,
+            FindingType.MIXED_DATES,
             {"formats_found": []},
         )
         compose_finding(f)
@@ -380,7 +380,7 @@ class TestEdgeCaseMinimalEvidence:
 
     def test_near_constant_empty_evidence(self):
         f = _make_finding(
-            FindingType.CARDINALITY_ANOMALY,
+            FindingType.NEAR_CONSTANT,
             {"top_values": []},
         )
         compose_finding(f)
@@ -388,7 +388,7 @@ class TestEdgeCaseMinimalEvidence:
 
     def test_duplicate_ids_empty_evidence(self):
         f = _make_finding(
-            FindingType.CARDINALITY_ANOMALY,
+            FindingType.DUPLICATE_IDS,
             {"duplicate_values": []},
         )
         compose_finding(f)
@@ -443,7 +443,7 @@ class TestEdgeCaseLongFieldName:
 
     def test_leading_zeros_long_name(self, long_name):
         f = _make_finding(
-            FindingType.FORMAT_INCONSISTENCY,
+            FindingType.LEADING_ZEROS,
             {"leading_zero_count": 1, "total_checked": 10},
             field_name=long_name,
         )
@@ -453,7 +453,7 @@ class TestEdgeCaseLongFieldName:
 
     def test_near_constant_long_name(self, long_name):
         f = _make_finding(
-            FindingType.CARDINALITY_ANOMALY,
+            FindingType.NEAR_CONSTANT,
             {"top_values": [{"value": "A", "count": 100}], "total_count": 100},
             field_name=long_name,
         )
@@ -498,7 +498,7 @@ class TestIntegrationPipeline:
                 field_name="cost",
             ),
             _make_finding(
-                FindingType.FORMAT_INCONSISTENCY,
+                FindingType.LEADING_ZEROS,
                 {
                     "leading_zero_count": 5,
                     "no_leading_zero_count": 15,
@@ -509,7 +509,7 @@ class TestIntegrationPipeline:
                 field_name="zip",
             ),
             _make_finding(
-                FindingType.CARDINALITY_ANOMALY,
+                FindingType.NEAR_CONSTANT,
                 {
                     "unique_count": 1,
                     "total_count": 500,
@@ -532,7 +532,7 @@ class TestIntegrationPipeline:
         findings = [
             # INFO (near-constant) -- will sort last
             _make_finding(
-                FindingType.CARDINALITY_ANOMALY,
+                FindingType.NEAR_CONSTANT,
                 {
                     "unique_count": 1,
                     "total_count": 100,
@@ -543,7 +543,7 @@ class TestIntegrationPipeline:
             ),
             # WARNING (leading zeros) -- will sort middle
             _make_finding(
-                FindingType.FORMAT_INCONSISTENCY,
+                FindingType.LEADING_ZEROS,
                 {
                     "leading_zero_count": 2,
                     "no_leading_zero_count": 8,

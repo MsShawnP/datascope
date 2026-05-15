@@ -54,7 +54,7 @@ def _critical_finding(field_name: str = "revenue") -> Finding:
 
 def _warning_finding(field_name: str = "zip_code") -> Finding:
     return _make_finding(
-        FindingType.FORMAT_INCONSISTENCY,
+        FindingType.LEADING_ZEROS,
         {
             "leading_zero_count": 10,
             "no_leading_zero_count": 40,
@@ -68,7 +68,7 @@ def _warning_finding(field_name: str = "zip_code") -> Finding:
 
 def _info_finding(field_name: str = "status") -> Finding:
     return _make_finding(
-        FindingType.CARDINALITY_ANOMALY,
+        FindingType.NEAR_CONSTANT,
         {
             "unique_count": 2,
             "total_count": 5000,
@@ -281,7 +281,7 @@ class TestIntegrationPipeline:
             ),
             Finding(
                 field_name="zip_code",
-                finding_type=FindingType.FORMAT_INCONSISTENCY,
+                finding_type=FindingType.LEADING_ZEROS,
                 evidence={
                     "leading_zero_count": 5,
                     "no_leading_zero_count": 45,
@@ -292,7 +292,7 @@ class TestIntegrationPipeline:
             ),
             Finding(
                 field_name="invoice_date",
-                finding_type=FindingType.FORMAT_INCONSISTENCY,
+                finding_type=FindingType.MIXED_DATES,
                 evidence={
                     "formats_found": ["%Y-%m-%d", "%m/%d/%Y"],
                     "examples_per_format": {
@@ -304,7 +304,7 @@ class TestIntegrationPipeline:
             ),
             Finding(
                 field_name="country",
-                finding_type=FindingType.CARDINALITY_ANOMALY,
+                finding_type=FindingType.NEAR_CONSTANT,
                 evidence={
                     "unique_count": 1,
                     "total_count": 500,
@@ -314,7 +314,7 @@ class TestIntegrationPipeline:
             ),
             Finding(
                 field_name="order_id",
-                finding_type=FindingType.CARDINALITY_ANOMALY,
+                finding_type=FindingType.DUPLICATE_IDS,
                 evidence={
                     "unique_count": 980,
                     "total_count": 1000,

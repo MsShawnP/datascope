@@ -79,8 +79,10 @@ _SEVERITY_LABELS: dict[Severity, str] = {
 _FINDING_TYPE_LABELS: dict[FindingType, str] = {
     FindingType.TYPE_INCONSISTENCY: "Type Inconsistency",
     FindingType.SENTINEL_VALUE: "Sentinel Value",
-    FindingType.FORMAT_INCONSISTENCY: "Format Inconsistency",
-    FindingType.CARDINALITY_ANOMALY: "Cardinality Anomaly",
+    FindingType.LEADING_ZEROS: "Leading Zeros",
+    FindingType.MIXED_DATES: "Mixed Date Formats",
+    FindingType.NEAR_CONSTANT: "Near-Constant Column",
+    FindingType.DUPLICATE_IDS: "Suspected Duplicate IDs",
 }
 
 # Page geometry.

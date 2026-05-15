@@ -5,7 +5,8 @@ like ID columns with unexpected duplicates (very high but not 100%
 uniqueness).
 
 Produces :class:`~datascope.models.Finding` instances with
-:attr:`~datascope.models.FindingType.CARDINALITY_ANOMALY`.
+:attr:`~datascope.models.FindingType.NEAR_CONSTANT` or
+:attr:`~datascope.models.FindingType.DUPLICATE_IDS`.
 
 Severity is *not* assigned here -- that is the severity classifier's job (U7).
 """
@@ -82,7 +83,7 @@ def analyze_cardinality(result: LoaderResult) -> list[Finding]:
 
             findings.append(Finding(
                 field_name=col_name,
-                finding_type=FindingType.CARDINALITY_ANOMALY,
+                finding_type=FindingType.NEAR_CONSTANT,
                 evidence=evidence,
             ))
 
@@ -104,7 +105,7 @@ def analyze_cardinality(result: LoaderResult) -> list[Finding]:
 
             findings.append(Finding(
                 field_name=col_name,
-                finding_type=FindingType.CARDINALITY_ANOMALY,
+                finding_type=FindingType.DUPLICATE_IDS,
                 evidence=evidence,
             ))
 

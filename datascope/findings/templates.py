@@ -162,7 +162,7 @@ def sentinel_value(field_name: str, evidence: dict[str, Any]) -> dict[str, str]:
 
 
 # ---------------------------------------------------------------------------
-# FORMAT_INCONSISTENCY -- leading zeros
+# LEADING_ZEROS
 # ---------------------------------------------------------------------------
 
 def leading_zeros(field_name: str, evidence: dict[str, Any]) -> dict[str, str]:
@@ -208,7 +208,7 @@ def leading_zeros(field_name: str, evidence: dict[str, Any]) -> dict[str, str]:
 
 
 # ---------------------------------------------------------------------------
-# FORMAT_INCONSISTENCY -- mixed dates
+# MIXED_DATES
 # ---------------------------------------------------------------------------
 
 def mixed_dates(field_name: str, evidence: dict[str, Any]) -> dict[str, str]:
@@ -257,7 +257,7 @@ def mixed_dates(field_name: str, evidence: dict[str, Any]) -> dict[str, str]:
 
 
 # ---------------------------------------------------------------------------
-# CARDINALITY_ANOMALY -- near-constant
+# NEAR_CONSTANT
 # ---------------------------------------------------------------------------
 
 def near_constant(field_name: str, evidence: dict[str, Any]) -> dict[str, str]:
@@ -309,7 +309,7 @@ def near_constant(field_name: str, evidence: dict[str, Any]) -> dict[str, str]:
 
 
 # ---------------------------------------------------------------------------
-# CARDINALITY_ANOMALY -- suspected duplicate IDs
+# DUPLICATE_IDS
 # ---------------------------------------------------------------------------
 
 def suspected_duplicate_ids(field_name: str, evidence: dict[str, Any]) -> dict[str, str]:

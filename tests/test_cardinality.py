@@ -68,7 +68,7 @@ class TestSuspectedDuplicateIDs:
 
     def test_finding_type(self, result):
         finding = analyze_cardinality(result)[0]
-        assert finding.finding_type is FindingType.CARDINALITY_ANOMALY
+        assert finding.finding_type is FindingType.DUPLICATE_IDS
 
     def test_severity_is_none(self, result):
         """Severity is assigned later by the classifier, not the detector."""
@@ -116,7 +116,7 @@ class TestNearConstant:
 
     def test_finding_type(self, result):
         finding = analyze_cardinality(result)[0]
-        assert finding.finding_type is FindingType.CARDINALITY_ANOMALY
+        assert finding.finding_type is FindingType.NEAR_CONSTANT
 
     def test_evidence_unique_count(self, result):
         finding = analyze_cardinality(result)[0]
