@@ -70,7 +70,7 @@ def type_inconsistency(field_name: str, evidence: dict[str, Any]) -> dict[str, s
     example_str = _join_examples(all_examples)
 
     assumption = (
-        f"Column `{field_name}` appears to be purely {majority}."
+        f"Column '{field_name}' appears to be purely {majority}."
     )
     reality = (
         f"However, {minority_desc} were found among {total} non-null values "
@@ -80,24 +80,24 @@ def type_inconsistency(field_name: str, evidence: dict[str, Any]) -> dict[str, s
 
     if majority.lower() in ("numeric", "int", "float"):
         impact = (
-            f"Rows with non-numeric values in `{field_name}` will be silently "
+            f"Rows with non-numeric values in '{field_name}' will be silently "
             f"dropped or converted to NaN during sums, averages, and other "
             f"calculations, producing incorrect results without any error message."
         )
     else:
         impact = (
             f"Downstream systems expecting a uniform {majority} type in "
-            f"`{field_name}` may misinterpret or reject the unexpected values, "
+            f"'{field_name}' may misinterpret or reject the unexpected values, "
             f"leading to key-lookup failures or broken transformations."
         )
 
     fix_recommendation = (
-        f"Review the non-{majority} values in `{field_name}` and decide "
+        f"Review the non-{majority} values in '{field_name}' and decide "
         f"whether they should be converted to {majority}, replaced with a "
         f"proper null, or moved to a separate column."
     )
     prevention_rule = (
-        f"Every value in `{field_name}` should be the same type ({majority}). "
+        f"Every value in '{field_name}' should be the same type ({majority}). "
         f"Add a type-check validation rule at data entry or ingestion time."
     )
 
@@ -129,7 +129,7 @@ def sentinel_value(field_name: str, evidence: dict[str, Any]) -> dict[str, str]:
     sentinel_desc = ", ".join(sentinel_counts) if sentinel_counts else "unknown sentinel values"
 
     assumption = (
-        f"Column `{field_name}` appears to be a clean {majority_type} column."
+        f"Column '{field_name}' appears to be a clean {majority_type} column."
     )
     reality = (
         f"However, {_pct(sentinel_pct)} of values ({len(sentinels)} distinct sentinel "
@@ -138,11 +138,11 @@ def sentinel_value(field_name: str, evidence: dict[str, Any]) -> dict[str, str]:
     )
     impact = (
         f"Tools like pandas and Excel silently drop sentinel strings when "
-        f"computing sums or averages on `{field_name}`, making totals lower "
+        f"computing sums or averages on '{field_name}', making totals lower "
         f"than expected. No error is raised, so the data loss goes unnoticed."
     )
     fix_recommendation = (
-        f"Replace sentinel values in `{field_name}` with proper null/blank "
+        f"Replace sentinel values in '{field_name}' with proper null/blank "
         f"cells so that downstream tools handle missing data correctly and "
         f"row counts reflect reality."
     )
@@ -174,7 +174,7 @@ def leading_zeros(field_name: str, evidence: dict[str, Any]) -> dict[str, str]:
     examples_without = evidence.get("examples_without_zeros", [])
 
     assumption = (
-        f"Column `{field_name}` appears to use a single, consistent "
+        f"Column '{field_name}' appears to use a single, consistent "
         f"numeric-string format."
     )
     reality = (
@@ -183,17 +183,17 @@ def leading_zeros(field_name: str, evidence: dict[str, Any]) -> dict[str, str]:
         f"do not (e.g. {_join_examples(examples_without)})."
     )
     impact = (
-        f"Leading zeros in `{field_name}` will be stripped when values are "
+        f"Leading zeros in '{field_name}' will be stripped when values are "
         f"treated as numbers. This causes join or lookup failures because "
         f"'00123' no longer matches '123' as a key."
     )
     fix_recommendation = (
-        f"Standardize all values in `{field_name}` to the same format. If "
+        f"Standardize all values in '{field_name}' to the same format. If "
         f"leading zeros are meaningful (e.g. zip codes, product codes), store "
         f"them as text with consistent padding."
     )
     prevention_rule = (
-        f"Decide whether `{field_name}` is a number or a code. Numbers "
+        f"Decide whether '{field_name}' is a number or a code. Numbers "
         f"should never have leading zeros; codes should always be stored "
         f"as text with a fixed width."
     )
@@ -221,28 +221,28 @@ def mixed_dates(field_name: str, evidence: dict[str, Any]) -> dict[str, str]:
     for fmt in formats:
         examples = examples_per.get(fmt, [])
         example_str = _join_examples(examples, limit=2)
-        format_parts.append(f"  - {fmt}: {example_str}")
-    format_desc = "\n".join(format_parts) if format_parts else "  (no formats)"
+        format_parts.append(f"{fmt} (e.g. {example_str})")
+    format_desc = "; ".join(format_parts) if format_parts else "(no formats detected)"
 
     assumption = (
-        f"Column `{field_name}` appears to use a single date format."
+        f"Column '{field_name}' appears to use a single date format."
     )
     reality = (
         f"However, {len(formats)} different date formats were found across "
-        f"{total} date values:\n{format_desc}"
+        f"{total} date values: {format_desc}."
     )
     impact = (
-        f"Mixed date formats in `{field_name}` cause parsing ambiguity. "
+        f"Mixed date formats in '{field_name}' cause parsing ambiguity. "
         f"For example, '01/02/2026' could be January 2 or February 1 "
         f"depending on the format. Tools may silently parse dates "
         f"incorrectly, producing wrong results."
     )
     fix_recommendation = (
-        f"Pick one date format for `{field_name}` (ISO 8601 YYYY-MM-DD is "
+        f"Pick one date format for '{field_name}' (ISO 8601 YYYY-MM-DD is "
         f"recommended) and convert all existing values to that format."
     )
     prevention_rule = (
-        f"All dates in `{field_name}` should use the same format. Add "
+        f"All dates in '{field_name}' should use the same format. Add "
         f"format validation at data entry time and reject values that "
         f"do not match."
     )
@@ -274,7 +274,7 @@ def near_constant(field_name: str, evidence: dict[str, Any]) -> dict[str, str]:
     top_desc = ", ".join(top_parts) if top_parts else "(no values)"
 
     assumption = (
-        f"Column `{field_name}` is expected to carry meaningful, "
+        f"Column '{field_name}' is expected to carry meaningful, "
         f"varying data."
     )
     reality = (
@@ -284,17 +284,17 @@ def near_constant(field_name: str, evidence: dict[str, Any]) -> dict[str, str]:
         f"Most common: {top_desc}."
     )
     impact = (
-        f"A near-constant column like `{field_name}` adds no analytical "
+        f"A near-constant column like '{field_name}' adds no analytical "
         f"value. Including it in models or reports may mislead readers "
         f"into thinking the field varies when it does not."
     )
     fix_recommendation = (
-        f"Verify whether `{field_name}` should actually vary. If not, "
+        f"Verify whether '{field_name}' should actually vary. If not, "
         f"document it as a constant and consider removing it from analysis. "
         f"If it should vary, investigate why the data is uniform."
     )
     prevention_rule = (
-        f"If `{field_name}` is supposed to carry diverse values, add a "
+        f"If '{field_name}' is supposed to carry diverse values, add a "
         f"data-quality check that flags columns with fewer than 1% unique "
         f"values."
     )
@@ -322,7 +322,7 @@ def suspected_duplicate_ids(field_name: str, evidence: dict[str, Any]) -> dict[s
     dup_str = _join_examples(duplicates, limit=5)
 
     assumption = (
-        f"Column `{field_name}` appears to be a unique identifier "
+        f"Column '{field_name}' appears to be a unique identifier "
         f"(ID column)."
     )
     reality = (
@@ -331,18 +331,18 @@ def suspected_duplicate_ids(field_name: str, evidence: dict[str, Any]) -> dict[s
         f"Duplicate values include: {dup_str}."
     )
     impact = (
-        f"Duplicate IDs in `{field_name}` cause row-level joins to fan out, "
+        f"Duplicate IDs in '{field_name}' cause row-level joins to fan out, "
         f"producing unexpected extra rows in merged datasets. Aggregations "
         f"that assume one row per ID will double-count affected records."
     )
     fix_recommendation = (
-        f"Investigate the duplicate values in `{field_name}` to determine "
+        f"Investigate the duplicate values in '{field_name}' to determine "
         f"whether they are true duplicates (same record entered twice) or "
         f"legitimate repeats (one-to-many relationship). De-duplicate or "
         f"re-model accordingly."
     )
     prevention_rule = (
-        f"If `{field_name}` is meant to be a primary key, enforce a "
+        f"If '{field_name}' is meant to be a primary key, enforce a "
         f"uniqueness constraint at the database or validation layer."
     )
 
