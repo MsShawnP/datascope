@@ -24,8 +24,8 @@ Each finding is expressed as **assumption vs. reality**: what the data *appears*
 ## Installation
 
 ```bash
-git clone https://github.com/MsShawnP/field-story-scorer.git
-cd field-story-scorer
+git clone https://github.com/MsShawnP/datascope.git
+cd datascope
 pip install -e .
 ```
 
