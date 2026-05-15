@@ -3,7 +3,7 @@
 Derived from full project audit (2026-05-15). See AUDIT.md for rationale.
 
 Tier: Medium
-Current focus: Move 3 (BRIDGE) — tasks 3A-3F complete
+Current focus: Moves 1-3 complete. Move 4 (GROW) is next.
 
 ---
 
@@ -125,7 +125,7 @@ Goal: Engineers can integrate datascope into pipelines; consultants still get th
 - Add `authors`, `urls` (homepage, repository, issues), `readme = "README.md"` fields
 - Done when: `python -m build` produces a wheel whose metadata includes author, homepage URL, and rendered README
 
-### 3G: Publish to PyPI
+### 3G: Publish to PyPI ✓
 - Depends on: 3E, 3F (CI must be green; metadata must be complete)
 - Register `datascope` on PyPI (check name availability first — may need `datascope-dq` or similar)
 - Add GitHub Actions publish workflow (on tag push)
