@@ -351,3 +351,59 @@ def suspected_duplicate_ids(field_name: str, evidence: dict[str, Any]) -> dict[s
         "fix_recommendation": fix_recommendation,
         "prevention_rule": prevention_rule,
     }
+
+
+# ---------------------------------------------------------------------------
+# MISSING_VALUE_PATTERN
+# ---------------------------------------------------------------------------
+
+def missing_value_pattern(field_name: str, evidence: dict[str, Any]) -> dict[str, str]:
+    """Template for missing-value pattern findings."""
+    null_count = evidence.get("null_count", 0)
+    total_rows = evidence.get("total_rows", 0)
+    null_pct = evidence.get("null_pct", 0)
+    distribution = evidence.get("distribution", "scattered")
+
+    assumption = (
+        f"Column '{field_name}' is expected to be fully populated."
+    )
+    reality = (
+        f"However, {null_count} of {total_rows} rows "
+        f"({_pct(null_pct)}) are null or blank. "
+        f"The missing values are {distribution} across the dataset."
+    )
+
+    if null_pct >= 50:
+        impact = (
+            f"With more than half its values missing, '{field_name}' is "
+            f"unreliable for analysis. Aggregations will silently exclude "
+            f"the missing rows, and any model trained on this column will "
+            f"learn from a biased sample."
+        )
+    else:
+        impact = (
+            f"Missing values in '{field_name}' will be silently excluded "
+            f"from calculations. If the missingness is not random, "
+            f"aggregations and models will be biased toward the "
+            f"non-missing subset."
+        )
+
+    fix_recommendation = (
+        f"Investigate why '{field_name}' has missing values. If the "
+        f"blanks represent a known condition, consider a default value "
+        f"or a separate status column. If they are data-entry gaps, "
+        f"backfill from the source system."
+    )
+    prevention_rule = (
+        f"Add a NOT NULL or completeness check for '{field_name}' "
+        f"at ingestion time. Flag any batch where null rate exceeds "
+        f"the historical baseline."
+    )
+
+    return {
+        "assumption": assumption,
+        "reality": reality,
+        "impact": impact,
+        "fix_recommendation": fix_recommendation,
+        "prevention_rule": prevention_rule,
+    }

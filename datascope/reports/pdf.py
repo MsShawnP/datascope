@@ -82,6 +82,7 @@ _FINDING_TYPE_LABELS: dict[FindingType, str] = {
     FindingType.MIXED_DATES: "Mixed Date Formats",
     FindingType.NEAR_CONSTANT: "Near-Constant Column",
     FindingType.DUPLICATE_IDS: "Suspected Duplicate IDs",
+    FindingType.MISSING_VALUE_PATTERN: "Missing Values",
 }
 
 # Page geometry.

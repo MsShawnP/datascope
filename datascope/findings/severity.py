@@ -44,4 +44,10 @@ def classify_severity(finding: Finding) -> Severity:
     if ft is FindingType.DUPLICATE_IDS:
         return Severity.WARNING
 
+    if ft is FindingType.MISSING_VALUE_PATTERN:
+        null_pct = ev.get("null_pct", 0)
+        if null_pct >= 50:
+            return Severity.WARNING
+        return Severity.INFO
+
     return Severity.INFO

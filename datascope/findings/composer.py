@@ -16,6 +16,7 @@ _TEMPLATE_MAP = {
     FindingType.MIXED_DATES: templates.mixed_dates,
     FindingType.NEAR_CONSTANT: templates.near_constant,
     FindingType.DUPLICATE_IDS: templates.suspected_duplicate_ids,
+    FindingType.MISSING_VALUE_PATTERN: templates.missing_value_pattern,
 }
 
 
