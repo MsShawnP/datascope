@@ -52,7 +52,11 @@ def load(path: str | Path, *, sheet: str | int = 0) -> LoaderResult:
         from datascope.loaders.csv_loader import load_csv
         return load_csv(path)
 
+    if ext == ".parquet":
+        from datascope.loaders.parquet import load_parquet
+        return load_parquet(path)
+
     raise ValueError(
         f"Unsupported file extension '{ext}'. "
-        f"Supported: .xlsx, .csv"
+        f"Supported: .xlsx, .csv, .parquet"
     )

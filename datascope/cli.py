@@ -19,7 +19,7 @@ from pathlib import Path
 from datascope import __version__
 
 # Supported file extensions (lower-cased, with leading dot).
-_SUPPORTED_EXTENSIONS = {".xlsx", ".csv"}
+_SUPPORTED_EXTENSIONS = {".xlsx", ".csv", ".parquet"}
 
 
 def _build_parser() -> argparse.ArgumentParser:
@@ -53,10 +53,10 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--format",
-        choices=["pdf", "json", "html", "both"],
+        choices=["pdf", "json", "html", "annotated-excel", "both"],
         default="pdf",
         dest="output_format",
-        help="Output format: pdf, json, html, or both (pdf+json). Default: pdf.",
+        help="Output format: pdf, json, html, annotated-excel, or both (pdf+json). Default: pdf.",
     )
     parser.add_argument(
         "--verbose", "-v",
@@ -310,6 +310,17 @@ def main(argv: list[str] | None = None) -> None:
         write_html(processed, result.source_metadata, html_path)
         if output_path is None:
             output_path = html_path
+
+    if fmt == "annotated-excel":
+        from datascope.reports import write_annotated_excel
+
+        df = result.dataframe
+        headers = list(df.columns)
+        source_data = df.values.tolist()
+        axl_path = output_dir / f"{input_path.stem}_annotated.xlsx"
+        write_annotated_excel(processed, result.source_metadata, source_data, headers, axl_path)
+        if output_path is None:
+            output_path = axl_path
 
     # --- stdout summary -------------------------------------------------
     if args.quiet:
