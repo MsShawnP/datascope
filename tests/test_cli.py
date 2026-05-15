@@ -220,6 +220,45 @@ class TestEmptyFile:
 
 
 # ===================================================================
+# Size guard (--max-rows and cell limits)
+# ===================================================================
+
+class TestSizeGuard:
+
+    def test_max_rows_aborts(self, tmp_path):
+        csv_path = _write_csv(tmp_path, """\
+            a,b
+            1,2
+            3,4
+            5,6
+        """)
+        with pytest.raises(SystemExit, match="1"):
+            main([str(csv_path), "--max-rows", "2", "--output-dir", str(tmp_path / "out")])
+
+    def test_max_rows_allows_within_limit(self, capsys, tmp_path):
+        csv_path = _write_csv(tmp_path, """\
+            a,b
+            1,2
+            3,4
+        """)
+        out_dir = tmp_path / "out"
+        main([str(csv_path), "--max-rows", "10", "--output-dir", str(out_dir)])
+        assert (out_dir / "test_diagnostic.pdf").exists()
+
+    def test_max_rows_stderr_message(self, capsys, tmp_path):
+        csv_path = _write_csv(tmp_path, """\
+            a,b
+            1,2
+            3,4
+            5,6
+        """)
+        with pytest.raises(SystemExit):
+            main([str(csv_path), "--max-rows", "1", "--output-dir", str(tmp_path / "out")])
+        captured = capsys.readouterr()
+        assert "--max-rows" in captured.err
+
+
+# ===================================================================
 # Output file naming
 # ===================================================================
 

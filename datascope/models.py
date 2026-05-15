@@ -37,6 +37,7 @@ class FindingType(enum.Enum):
     MIXED_DATES = "mixed_dates"
     NEAR_CONSTANT = "near_constant"
     DUPLICATE_IDS = "duplicate_ids"
+    MISSING_VALUE_PATTERN = "missing_value_pattern"
 
 
 # ---------------------------------------------------------------------------

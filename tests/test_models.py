@@ -39,7 +39,7 @@ class TestSeverity:
 
 class TestFindingType:
 
-    def test_contains_all_six_types(self):
+    def test_contains_all_types(self):
         expected = {
             "TYPE_INCONSISTENCY",
             "SENTINEL_VALUE",
@@ -47,6 +47,7 @@ class TestFindingType:
             "MIXED_DATES",
             "NEAR_CONSTANT",
             "DUPLICATE_IDS",
+            "MISSING_VALUE_PATTERN",
         }
         assert {ft.name for ft in FindingType} == expected
 

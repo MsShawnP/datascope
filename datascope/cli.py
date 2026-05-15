@@ -53,10 +53,10 @@ def _build_parser() -> argparse.ArgumentParser:
     )
     parser.add_argument(
         "--format",
-        choices=["pdf", "json", "both"],
+        choices=["pdf", "json", "html", "both"],
         default="pdf",
         dest="output_format",
-        help="Output format (default: pdf).",
+        help="Output format: pdf, json, html, or both (pdf+json). Default: pdf.",
     )
     parser.add_argument(
         "--verbose", "-v",
@@ -67,6 +67,15 @@ def _build_parser() -> argparse.ArgumentParser:
         "--quiet", "-q",
         action="store_true",
         help="Suppress stdout summary. Exit code 0 = no critical findings, 1 = critical findings present.",
+    )
+    parser.add_argument(
+        "--max-rows",
+        type=int,
+        default=None,
+        help=(
+            "Maximum rows to process. Abort if exceeded. "
+            "Default: warn at 500K cells, abort at 5M cells."
+        ),
     )
     parser.add_argument(
         "--version",
@@ -213,10 +222,38 @@ def main(argv: list[str] | None = None) -> None:
     sheet = _parse_sheet(args.sheet)
     result = load(input_path, sheet=sheet)
 
+    # --- size guard -----------------------------------------------------
+    rows, cols = result.dataframe.shape
+    cells = rows * cols
+    max_rows = args.max_rows
+    if max_rows is not None and rows > max_rows:
+        print(
+            f"Error: {rows:,} rows exceeds --max-rows limit of {max_rows:,}.",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+    if max_rows is None:
+        _WARN_CELLS = 500_000
+        _ABORT_CELLS = 5_000_000
+        if cells > _ABORT_CELLS:
+            print(
+                f"Error: {rows:,} rows x {cols:,} columns = {cells:,} cells "
+                f"exceeds the {_ABORT_CELLS:,}-cell safety limit.\n"
+                f"Use --max-rows to override.",
+                file=sys.stderr,
+            )
+            sys.exit(1)
+        if cells > _WARN_CELLS:
+            print(
+                f"Warning: {cells:,} cells is large — analysis may be slow.",
+                file=sys.stderr,
+            )
+
     # --- analyse --------------------------------------------------------
     from datascope.analyzers import (
         analyze_cardinality,
         analyze_leading_zeros,
+        analyze_missing_values,
         analyze_mixed_dates,
         analyze_sentinels,
         analyze_type_consistency,
@@ -228,6 +265,7 @@ def main(argv: list[str] | None = None) -> None:
         analyze_leading_zeros,
         analyze_mixed_dates,
         analyze_cardinality,
+        analyze_missing_values,
     ]
 
     all_findings: list = []
@@ -264,6 +302,14 @@ def main(argv: list[str] | None = None) -> None:
         _write_json(processed, result.source_metadata, json_path)
         if output_path is None:
             output_path = json_path
+
+    if fmt == "html":
+        from datascope.reports import write_html
+
+        html_path = output_dir / f"{input_path.stem}_diagnostic.html"
+        write_html(processed, result.source_metadata, html_path)
+        if output_path is None:
+            output_path = html_path
 
     # --- stdout summary -------------------------------------------------
     if args.quiet:
