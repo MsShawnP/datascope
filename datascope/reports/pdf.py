@@ -79,8 +79,10 @@ _SEVERITY_LABELS: dict[Severity, str] = {
 _FINDING_TYPE_LABELS: dict[FindingType, str] = {
     FindingType.TYPE_INCONSISTENCY: "Type Inconsistency",
     FindingType.SENTINEL_VALUE: "Sentinel Value",
-    FindingType.FORMAT_INCONSISTENCY: "Format Inconsistency",
-    FindingType.CARDINALITY_ANOMALY: "Cardinality Anomaly",
+    FindingType.LEADING_ZEROS: "Leading Zeros",
+    FindingType.MIXED_DATES: "Mixed Date Formats",
+    FindingType.NEAR_CONSTANT: "Near-Constant Column",
+    FindingType.DUPLICATE_IDS: "Suspected Duplicate IDs",
 }
 
 # Page geometry.
@@ -252,16 +254,19 @@ def _health_assessment(counts: dict[Severity, int]) -> str:
             "No data quality issues were detected. The dataset appears clean "
             "and ready for analysis."
         )
+    info = counts[Severity.INFO]
     if crit == 0 and warn == 0:
         return (
-            "Only informational observations were found. The dataset is in "
-            "good shape overall, with a few minor items worth noting."
+            f"{info} informational observation{'s were' if info != 1 else ' was'} "
+            f"found. The dataset is in good shape overall, with "
+            f"{'a few' if info <= 3 else 'some'} minor items worth noting."
         )
     if crit == 0:
         return (
-            "No critical issues were found, but there are warnings that "
-            "should be addressed before using this data in production. "
-            "Review the warnings below to prevent downstream problems."
+            f"No critical issues were found, but {warn} "
+            f"warning{'s' if warn != 1 else ''} and {info} informational "
+            f"observation{'s were' if info != 1 else ' was'} detected. "
+            f"Address the warnings before using this data in production."
         )
     if crit <= 2:
         return (
@@ -588,9 +593,25 @@ def write_pdf(
         pagesize=letter,
         rightMargin=0.5 * inch,
         leftMargin=0.5 * inch,
-        topMargin=0.5 * inch,
-        bottomMargin=0.5 * inch,
+        topMargin=0.6 * inch,
+        bottomMargin=0.6 * inch,
     )
+
+    filename = source_metadata.get("filename", "Unknown source")
+
+    def _on_later_pages(canvas, doc):
+        canvas.saveState()
+        canvas.setFont("Helvetica", 8)
+        canvas.setFillColor(colors.HexColor("#666666"))
+        canvas.drawString(
+            0.5 * inch, letter[1] - 0.4 * inch,
+            f"datascope diagnostic — {filename}",
+        )
+        canvas.drawRightString(
+            letter[0] - 0.5 * inch, 0.35 * inch,
+            f"Page {canvas.getPageNumber()}",
+        )
+        canvas.restoreState()
 
     styles = _build_styles()
     counts = _severity_counts(findings)
@@ -601,5 +622,5 @@ def write_pdf(
     _build_findings_section(story, styles, findings)
     _build_field_inventory(story, styles, findings, source_metadata)
 
-    doc.build(story)
+    doc.build(story, onLaterPages=_on_later_pages)
     return output

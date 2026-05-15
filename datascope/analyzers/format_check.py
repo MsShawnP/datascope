@@ -1,7 +1,8 @@
 """Format-inconsistency detectors: leading zeros and mixed date formats.
 
 Produces :class:`~datascope.models.Finding` instances with
-:attr:`~datascope.models.FindingType.FORMAT_INCONSISTENCY`.
+:attr:`~datascope.models.FindingType.LEADING_ZEROS` or
+:attr:`~datascope.models.FindingType.MIXED_DATES`.
 
 Severity is *not* assigned here -- that is the severity classifier's job (U7).
 """
@@ -105,7 +106,7 @@ def analyze_leading_zeros(result: LoaderResult) -> list[Finding]:
 
         findings.append(Finding(
             field_name=col_name,
-            finding_type=FindingType.FORMAT_INCONSISTENCY,
+            finding_type=FindingType.LEADING_ZEROS,
             evidence=evidence,
         ))
 
@@ -224,7 +225,7 @@ def analyze_mixed_dates(result: LoaderResult) -> list[Finding]:
 
         findings.append(Finding(
             field_name=col_name,
-            finding_type=FindingType.FORMAT_INCONSISTENCY,
+            finding_type=FindingType.MIXED_DATES,
             evidence=evidence,
         ))
 

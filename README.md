@@ -24,8 +24,14 @@ Each finding is expressed as **assumption vs. reality**: what the data *appears*
 ## Installation
 
 ```bash
-git clone https://github.com/MsShawnP/field-story-scorer.git
-cd field-story-scorer
+pip install datascope-dq
+```
+
+Or install from source:
+
+```bash
+git clone https://github.com/MsShawnP/datascope.git
+cd datascope
 pip install -e .
 ```
 
@@ -140,7 +146,7 @@ datascope/
 - pandas >= 2.0
 - openpyxl >= 3.1
 - reportlab >= 4.0
-- numpy >= 1.24
+- defusedxml >= 0.7
 
 ---
 

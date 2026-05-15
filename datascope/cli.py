@@ -2,16 +2,18 @@
 
 Usage::
 
-    datascope <input-file> [--output-dir DIR] [--sheet NAME_OR_INDEX] [--version]
+    datascope <input-file> [--output-dir DIR] [--sheet NAME_OR_INDEX] [--format FMT] [--version]
 
 The CLI orchestrates the full analysis pipeline: load, analyse, classify,
-compose, and render a PDF diagnostic report.
+compose, and render diagnostic output.
 """
 
 from __future__ import annotations
 
 import argparse
+import json
 import sys
+import traceback
 from pathlib import Path
 
 from datascope import __version__
@@ -48,6 +50,23 @@ def _build_parser() -> argparse.ArgumentParser:
             "Sheet name or 0-based index (Excel only). "
             "Default: first sheet (index 0)."
         ),
+    )
+    parser.add_argument(
+        "--format",
+        choices=["pdf", "json", "both"],
+        default="pdf",
+        dest="output_format",
+        help="Output format (default: pdf).",
+    )
+    parser.add_argument(
+        "--verbose", "-v",
+        action="store_true",
+        help="Show full tracebacks when an analyzer fails.",
+    )
+    parser.add_argument(
+        "--quiet", "-q",
+        action="store_true",
+        help="Suppress stdout summary. Exit code 0 = no critical findings, 1 = critical findings present.",
     )
     parser.add_argument(
         "--version",
@@ -125,6 +144,39 @@ def _format_summary(findings: list, source_metadata: dict, output_path: Path) ->
     return "\n".join(lines)
 
 
+def _write_json(findings: list, source_metadata: dict, output_path: Path) -> None:
+    """Write findings as structured JSON."""
+    from datascope.models import Severity
+
+    counts: dict[str, int] = {"critical": 0, "warning": 0, "info": 0, "total": 0}
+    for f in findings:
+        if f.severity is not None:
+            counts[f.severity.name.lower()] += 1
+            counts["total"] += 1
+
+    payload = {
+        "source": dict(source_metadata),
+        "summary": counts,
+        "findings": [
+            {
+                "field_name": f.field_name,
+                "finding_type": f.finding_type.value,
+                "severity": f.severity.name.lower() if f.severity else None,
+                "assumption": f.assumption,
+                "reality": f.reality,
+                "impact": f.impact,
+                "fix_recommendation": f.fix_recommendation,
+                "prevention_rule": f.prevention_rule,
+                "evidence": f.evidence,
+            }
+            for f in findings
+        ],
+    }
+
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(payload, indent=2, default=str), encoding="utf-8")
+
+
 def main(argv: list[str] | None = None) -> None:
     """Entry point for the datascope CLI.
 
@@ -184,7 +236,10 @@ def main(argv: list[str] | None = None) -> None:
         try:
             all_findings.extend(analyzer(result))
         except Exception as exc:
-            print(f"Warning: {analyzer.__name__} failed: {exc}", file=sys.stderr)
+            if args.verbose:
+                traceback.print_exc(file=sys.stderr)
+            else:
+                print(f"Warning: {analyzer.__name__} failed: {exc}", file=sys.stderr)
 
     # --- process --------------------------------------------------------
     from datascope.findings import process_findings
@@ -192,14 +247,30 @@ def main(argv: list[str] | None = None) -> None:
     processed = process_findings(all_findings)
 
     # --- report ---------------------------------------------------------
-    from datascope.reports import write_pdf
-
     output_dir = Path(args.output_dir)
     output_dir.mkdir(parents=True, exist_ok=True)
-    output_name = f"{input_path.stem}_diagnostic.pdf"
-    output_path = output_dir / output_name
 
-    write_pdf(processed, result.source_metadata, output_path)
+    fmt = args.output_format
+    output_path = None
+
+    if fmt in ("pdf", "both"):
+        from datascope.reports import write_pdf
+
+        output_name = f"{input_path.stem}_diagnostic.pdf"
+        output_path = output_dir / output_name
+        write_pdf(processed, result.source_metadata, output_path)
+
+    if fmt in ("json", "both"):
+        json_path = output_dir / f"{input_path.stem}_diagnostic.json"
+        _write_json(processed, result.source_metadata, json_path)
+        if output_path is None:
+            output_path = json_path
 
     # --- stdout summary -------------------------------------------------
+    if args.quiet:
+        from datascope.models import Severity
+
+        has_critical = any(f.severity is Severity.CRITICAL for f in processed)
+        sys.exit(1 if has_critical else 0)
+
     print(_format_summary(processed, result.source_metadata, output_path))

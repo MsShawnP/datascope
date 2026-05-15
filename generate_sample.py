@@ -1,10 +1,10 @@
 """
-Generate sample xlsx files for testing field-story-scorer.
+Generate sample xlsx files for datascope.
 
 Creates two files in samples/input/:
   sample_sales.xlsx        — clean dataset with a range of field types
   sample_mixed_types.xlsx  — dataset with genuine mixed-type cells in one column,
-                             designed to demonstrate the --strict-types flag
+                             designed to demonstrate cell-level type detection
 
 Usage:
     python generate_sample.py
@@ -61,9 +61,9 @@ def make_mixed_type_dataset(n: int = 200) -> None:
     Write sample_mixed_types.xlsx using openpyxl directly so that cells in
     'revenue_mixed' are genuine native types (float or str), not pandas-coerced.
 
-    This is the canonical test file for --strict-types mode:
-      - Standard run:      revenue_mixed scores near-identical to revenue
-      - --strict-types run: revenue_mixed shows score penalty + type_mix breakdown
+    This is the canonical test file for datascope's cell-level type detection:
+    the 15 string "N/A" cells hidden in the numeric column are invisible to
+    pandas but detected by datascope.
     """
     revenues = RNG.lognormal(mean=5, sigma=1.5, size=n).round(2).tolist()
     bad_rows = set(random.sample(range(n), 15))
@@ -83,9 +83,8 @@ def make_mixed_type_dataset(n: int = 200) -> None:
     wb.save(path)
     print(f"Created {path}  ({n} rows, 15 intentional string cells in revenue_mixed)")
     print()
-    print("Demonstrate the difference:")
-    print(f"  python scorer.py --input {path} --output-dir samples/output/")
-    print(f"  python scorer.py --input {path} --output-dir samples/output/ --strict-types")
+    print("Run datascope on the sample:")
+    print(f"  datascope {path} --output-dir samples/output/")
 
 
 if __name__ == "__main__":

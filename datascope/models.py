@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import enum
 from dataclasses import dataclass, field
-from typing import Any
+from typing import Any, TypedDict
 
 import pandas as pd
 
@@ -34,8 +34,10 @@ class FindingType(enum.Enum):
 
     TYPE_INCONSISTENCY = "type_inconsistency"
     SENTINEL_VALUE = "sentinel_value"
-    FORMAT_INCONSISTENCY = "format_inconsistency"
-    CARDINALITY_ANOMALY = "cardinality_anomaly"
+    LEADING_ZEROS = "leading_zeros"
+    MIXED_DATES = "mixed_dates"
+    NEAR_CONSTANT = "near_constant"
+    DUPLICATE_IDS = "duplicate_ids"
 
 
 # ---------------------------------------------------------------------------
@@ -69,6 +71,15 @@ class Finding:
     prevention_rule: str | None = None
 
 
+class SourceMetadata(TypedDict, total=False):
+    """Typed metadata about the data source."""
+
+    filename: str
+    sheet: str | int
+    row_count: int
+    column_count: int
+
+
 @dataclass
 class LoaderResult:
     """What the loader hands to the profiler and detectors.
@@ -79,4 +90,4 @@ class LoaderResult:
 
     dataframe: pd.DataFrame
     cell_types: dict[str, list[type]] = field(default_factory=dict)
-    source_metadata: dict[str, Any] = field(default_factory=dict)
+    source_metadata: SourceMetadata = field(default_factory=dict)  # type: ignore[assignment]

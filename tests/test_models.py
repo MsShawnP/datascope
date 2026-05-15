@@ -41,12 +41,14 @@ class TestSeverity:
 
 class TestFindingType:
 
-    def test_contains_all_four_types(self):
+    def test_contains_all_six_types(self):
         expected = {
             "TYPE_INCONSISTENCY",
             "SENTINEL_VALUE",
-            "FORMAT_INCONSISTENCY",
-            "CARDINALITY_ANOMALY",
+            "LEADING_ZEROS",
+            "MIXED_DATES",
+            "NEAR_CONSTANT",
+            "DUPLICATE_IDS",
         }
         assert {ft.name for ft in FindingType} == expected
 
@@ -94,7 +96,7 @@ class TestFinding:
         assert f.prevention_rule is None
 
     def test_evidence_defaults_to_empty_dict(self):
-        f = Finding(field_name="x", finding_type=FindingType.CARDINALITY_ANOMALY)
+        f = Finding(field_name="x", finding_type=FindingType.NEAR_CONSTANT)
         assert f.evidence == {}
 
     def test_sort_findings_by_severity(self):
@@ -112,7 +114,7 @@ class TestFinding:
             ),
             Finding(
                 field_name="c",
-                finding_type=FindingType.FORMAT_INCONSISTENCY,
+                finding_type=FindingType.LEADING_ZEROS,
                 severity=Severity.WARNING,
             ),
         ]

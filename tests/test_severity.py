@@ -146,7 +146,7 @@ class TestSentinelValue:
 
 
 # ---------------------------------------------------------------------------
-# FORMAT_INCONSISTENCY severity
+# LEADING_ZEROS / MIXED_DATES severity
 # ---------------------------------------------------------------------------
 
 class TestFormatInconsistency:
@@ -154,7 +154,7 @@ class TestFormatInconsistency:
     def test_leading_zeros_is_warning(self):
         """Leading-zero inconsistency -> WARNING."""
         finding = _make_finding(
-            FindingType.FORMAT_INCONSISTENCY,
+            FindingType.LEADING_ZEROS,
             {
                 "leading_zero_count": 10,
                 "no_leading_zero_count": 40,
@@ -168,7 +168,7 @@ class TestFormatInconsistency:
     def test_mixed_dates_is_warning(self):
         """Mixed date formats -> WARNING."""
         finding = _make_finding(
-            FindingType.FORMAT_INCONSISTENCY,
+            FindingType.MIXED_DATES,
             {
                 "formats_found": ["%Y-%m-%d", "%m/%d/%Y"],
                 "examples_per_format": {
@@ -182,7 +182,7 @@ class TestFormatInconsistency:
 
 
 # ---------------------------------------------------------------------------
-# CARDINALITY_ANOMALY severity
+# NEAR_CONSTANT / DUPLICATE_IDS severity
 # ---------------------------------------------------------------------------
 
 class TestCardinalityAnomaly:
@@ -190,7 +190,7 @@ class TestCardinalityAnomaly:
     def test_near_constant_is_info(self):
         """Near-constant column -> INFO."""
         finding = _make_finding(
-            FindingType.CARDINALITY_ANOMALY,
+            FindingType.NEAR_CONSTANT,
             {
                 "unique_count": 1,
                 "total_count": 1000,
@@ -203,7 +203,7 @@ class TestCardinalityAnomaly:
     def test_suspected_duplicate_ids_is_warning(self):
         """Suspected duplicate IDs -> WARNING."""
         finding = _make_finding(
-            FindingType.CARDINALITY_ANOMALY,
+            FindingType.DUPLICATE_IDS,
             {
                 "unique_count": 980,
                 "total_count": 1000,
@@ -244,15 +244,25 @@ class TestEdgeCases:
         finding = _make_finding(FindingType.SENTINEL_VALUE, {})
         assert classify_severity(finding) is Severity.CRITICAL
 
-    def test_empty_evidence_format(self):
-        """FORMAT_INCONSISTENCY with empty evidence -> WARNING."""
-        finding = _make_finding(FindingType.FORMAT_INCONSISTENCY, {})
+    def test_empty_evidence_leading_zeros(self):
+        """LEADING_ZEROS with empty evidence -> WARNING."""
+        finding = _make_finding(FindingType.LEADING_ZEROS, {})
         assert classify_severity(finding) is Severity.WARNING
 
-    def test_cardinality_empty_evidence_defaults_to_info(self):
-        """CARDINALITY_ANOMALY with no distinguishing keys -> INFO."""
-        finding = _make_finding(FindingType.CARDINALITY_ANOMALY, {})
+    def test_empty_evidence_mixed_dates(self):
+        """MIXED_DATES with empty evidence -> WARNING."""
+        finding = _make_finding(FindingType.MIXED_DATES, {})
+        assert classify_severity(finding) is Severity.WARNING
+
+    def test_near_constant_empty_evidence_defaults_to_info(self):
+        """NEAR_CONSTANT with no distinguishing keys -> INFO."""
+        finding = _make_finding(FindingType.NEAR_CONSTANT, {})
         assert classify_severity(finding) is Severity.INFO
+
+    def test_duplicate_ids_empty_evidence_defaults_to_warning(self):
+        """DUPLICATE_IDS with empty evidence -> WARNING."""
+        finding = _make_finding(FindingType.DUPLICATE_IDS, {})
+        assert classify_severity(finding) is Severity.WARNING
 
     def test_very_long_field_name(self):
         """Very long field name does not crash the classifier."""
