@@ -12,6 +12,7 @@ the Excel loader.
 from __future__ import annotations
 
 import csv
+import re
 from datetime import datetime
 from pathlib import Path
 
@@ -32,6 +33,13 @@ _DATETIME_FMTS = (
     "%m/%d/%Y",
     "%d/%m/%Y",
     "%Y/%m/%d",
+)
+
+_DATE_LIKE_RE = re.compile(
+    r"^\d{1,4}[\-/\.]\d{1,2}[\-/\.]\d{1,4}"
+    r"(?:[T ]\d{1,2}:\d{2}(?::\d{2})?)?$"
+    r"|^\w+ \d{1,2},? \d{2,4}$"
+    r"|^\d{1,2} \w+ \d{2,4}$"
 )
 
 
@@ -75,11 +83,12 @@ def _infer_cell(raw: str) -> object:
         return False
 
     # --- datetime -----------------------------------------------------
-    for fmt in _DATETIME_FMTS:
-        try:
-            return datetime.strptime(stripped, fmt)
-        except ValueError:
-            continue
+    if _DATE_LIKE_RE.match(stripped):
+        for fmt in _DATETIME_FMTS:
+            try:
+                return datetime.strptime(stripped, fmt)
+            except ValueError:
+                continue
 
     # --- string fallback ----------------------------------------------
     return stripped
@@ -114,58 +123,53 @@ def load_csv(path: Path) -> LoaderResult:
     try:
         with open(path, encoding="utf-8-sig", newline="") as fh:
             reader = csv.reader(fh)
-            all_rows = list(reader)
+            first_row = next(reader, None)
+
+            if first_row is None:
+                return LoaderResult(
+                    dataframe=pd.DataFrame(),
+                    cell_types={},
+                    source_metadata={
+                        "filename": path.name,
+                        "row_count": 0,
+                        "column_count": 0,
+                    },
+                )
+
+            headers = [
+                h.strip() if h.strip() else f"col_{i}"
+                for i, h in enumerate(first_row)
+            ]
+            n_cols = len(headers)
+
+            # Single-pass: infer types and build column-major type lists
+            col_types: list[list[type]] = [[] for _ in range(n_cols)]
+            inferred_rows: list[list[object]] = []
+
+            for raw_row in reader:
+                padded = raw_row + [""] * max(0, n_cols - len(raw_row))
+                row = [_infer_cell(padded[i]) for i in range(n_cols)]
+                inferred_rows.append(row)
+                for i in range(n_cols):
+                    col_types[i].append(type(row[i]))
+
     except csv.Error as exc:
         raise ValueError(f"Malformed CSV: {exc}") from exc
 
-    # Empty file or header-only
-    if not all_rows:
-        return LoaderResult(
-            dataframe=pd.DataFrame(),
-            cell_types={},
-            source_metadata={
-                "filename": path.name,
-                "row_count": 0,
-                "column_count": 0,
-            },
-        )
-
-    # --- headers --------------------------------------------------------
-    raw_headers = all_rows[0]
-    headers = [
-        h.strip() if h.strip() else f"col_{i}"
-        for i, h in enumerate(raw_headers)
-    ]
-
-    data_rows_raw = all_rows[1:]
-
-    if not data_rows_raw:
+    if not inferred_rows:
         return LoaderResult(
             dataframe=pd.DataFrame(columns=headers),
             cell_types={col: [] for col in headers},
             source_metadata={
                 "filename": path.name,
                 "row_count": 0,
-                "column_count": len(headers),
+                "column_count": n_cols,
             },
         )
 
-    # --- inference ------------------------------------------------------
-    n_cols = len(headers)
-    inferred_rows: list[list[object]] = []
-    for raw_row in data_rows_raw:
-        # Pad short rows, trim long rows to header width
-        padded = raw_row + [""] * max(0, n_cols - len(raw_row))
-        inferred_rows.append([_infer_cell(padded[i]) for i in range(n_cols)])
-
     df = pd.DataFrame(inferred_rows, columns=headers, dtype=object)
+    cell_types = {headers[i]: col_types[i] for i in range(n_cols)}
 
-    # --- cell_types -----------------------------------------------------
-    cell_types: dict[str, list[type]] = {}
-    for col_idx, col_name in enumerate(headers):
-        cell_types[col_name] = [type(row[col_idx]) for row in inferred_rows]
-
-    # --- source_metadata ------------------------------------------------
     source_metadata = {
         "filename": path.name,
         "row_count": len(inferred_rows),
