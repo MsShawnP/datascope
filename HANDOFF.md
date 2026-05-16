@@ -1,5 +1,17 @@
 # Handoff
 
+## 2026-05-16 12:00 — Audit Round 2 + Demo-Proof
+
+**Started from:** v2.2.0 shipped. Preparing to share demo links with first prospects.
+
+**Did:** Full 4-phase audit for client-readiness. Executed Moves 1-3: fixed --sheet crash, grammar bugs, stale help text; added branding to PDF/HTML/JSON; added badges, CHANGELOG, sample outputs, moved dev docs to .dev/. PR #6 created and pushed.
+
+**State:** PR #6 open with 3 commits. Tool is demo-safe — no crashes, branded reports, professional repo. 283 tests pass, lint clean. Move 4 (Growth) remains future work.
+
+**Next:** Merge PR #6 to main. Then either (a) start Move 4 growth work (landing page, demo video) or (b) rename local folder to "datascope" and begin client outreach. Tool is ready.
+
+---
+
 ## Session — 2026-05-15 (Move 4 + tag v2.2.0)
 
 **Phase:** Execution complete — all 25 sub-tasks done
