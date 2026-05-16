@@ -155,6 +155,7 @@ def _format_summary(findings: list, source_metadata: dict, output_path: Path) ->
 
 def _write_json(findings: list, source_metadata: dict, output_path: Path) -> None:
     """Write findings as structured JSON."""
+    from datascope import __version__
 
     counts: dict[str, int] = {"critical": 0, "warning": 0, "info": 0, "total": 0}
     for f in findings:
@@ -163,6 +164,7 @@ def _write_json(findings: list, source_metadata: dict, output_path: Path) -> Non
             counts["total"] += 1
 
     payload = {
+        "generator": {"tool": "datascope", "version": __version__},
         "source": dict(source_metadata),
         "summary": counts,
         "findings": [
