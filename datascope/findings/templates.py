@@ -67,12 +67,14 @@ def type_inconsistency(field_name: str, evidence: dict[str, Any]) -> dict[str, s
 
     minority_desc = " and ".join(minority_parts) if minority_parts else "other types"
     example_str = _join_examples(all_examples)
+    total_minority = sum(mt.get("count", 0) for mt in minority_types)
+    verb = "was" if total_minority == 1 else "were"
 
     assumption = (
         f"Column '{field_name}' appears to be purely {majority}."
     )
     reality = (
-        f"However, {minority_desc} were found among {total} non-null values "
+        f"However, {minority_desc} {verb} found among {total} non-null values "
         f"(the majority type covers {_pct(majority_pct)}). "
         f"Examples of unexpected values: {example_str}."
     )
@@ -121,7 +123,7 @@ def sentinel_value(field_name: str, evidence: dict[str, Any]) -> dict[str, str]:
 
     sentinel_examples = [s.get("value", "?") for s in sentinels]
     sentinel_counts = [
-        f"{_quote(s.get('value', '?'))} ({s.get('count', 0)} times)"
+        f"{_quote(s.get('value', '?'))} ({s.get('count', 0)} {'time' if s.get('count', 0) == 1 else 'times'})"
         for s in sentinels
     ]
     sentinel_desc = ", ".join(sentinel_counts) if sentinel_counts else "unknown sentinel values"
@@ -266,7 +268,7 @@ def near_constant(field_name: str, evidence: dict[str, Any]) -> dict[str, str]:
     top_values = evidence.get("top_values", [])
 
     top_parts = [
-        f"{_quote(tv.get('value', '?'))} ({tv.get('count', 0)} times)"
+        f"{_quote(tv.get('value', '?'))} ({tv.get('count', 0)} {'time' if tv.get('count', 0) == 1 else 'times'})"
         for tv in top_values[:3]
     ]
     top_desc = ", ".join(top_parts) if top_parts else "(no values)"
