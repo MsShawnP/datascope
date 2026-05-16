@@ -27,8 +27,8 @@ def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="datascope",
         description=(
-            "Analyse a tabular dataset (.xlsx or .csv) for data-quality issues\n"
-            "and generate a professional PDF diagnostic report."
+            "Analyse a tabular dataset (.xlsx, .csv, or .parquet) for data-quality\n"
+            "issues and generate a professional diagnostic report."
         ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
@@ -155,6 +155,7 @@ def _format_summary(findings: list, source_metadata: dict, output_path: Path) ->
 
 def _write_json(findings: list, source_metadata: dict, output_path: Path) -> None:
     """Write findings as structured JSON."""
+    from datascope import __version__
 
     counts: dict[str, int] = {"critical": 0, "warning": 0, "info": 0, "total": 0}
     for f in findings:
@@ -163,6 +164,7 @@ def _write_json(findings: list, source_metadata: dict, output_path: Path) -> Non
             counts["total"] += 1
 
     payload = {
+        "generator": {"tool": "datascope", "version": __version__},
         "source": dict(source_metadata),
         "summary": counts,
         "findings": [
@@ -220,7 +222,18 @@ def main(argv: list[str] | None = None) -> None:
     from datascope.loaders import load
 
     sheet = _parse_sheet(args.sheet)
-    result = load(input_path, sheet=sheet)
+
+    if args.sheet is not None and ext != ".xlsx":
+        print(
+            f"Warning: --sheet is ignored for {ext} files.",
+            file=sys.stderr,
+        )
+
+    try:
+        result = load(input_path, sheet=sheet)
+    except ValueError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        sys.exit(1)
 
     # --- size guard -----------------------------------------------------
     rows, cols = result.dataframe.shape

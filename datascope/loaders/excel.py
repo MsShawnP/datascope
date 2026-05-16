@@ -41,8 +41,22 @@ def load_excel(path: Path, sheet: str | int = 0) -> LoaderResult:
 
     try:
         if isinstance(sheet, int):
+            if sheet < 0 or sheet >= len(wb.worksheets):
+                available = [ws.title for ws in wb.worksheets]
+                wb.close()
+                raise ValueError(
+                    f"Sheet index {sheet} is out of range. "
+                    f"Available sheets: {', '.join(available)}"
+                )
             ws = wb.worksheets[sheet]
         else:
+            if sheet not in wb.sheetnames:
+                available = wb.sheetnames
+                wb.close()
+                raise ValueError(
+                    f"Sheet '{sheet}' not found. "
+                    f"Available sheets: {', '.join(available)}"
+                )
             ws = wb[sheet]
 
         sheet_title = ws.title

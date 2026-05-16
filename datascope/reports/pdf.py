@@ -186,7 +186,19 @@ def _build_title_page(
     counts: dict[Severity, int],
 ) -> None:
     """Append the title page flowables to *story*."""
-    story.append(Spacer(1, 1.5 * inch))
+    from datascope import __version__
+
+    story.append(Spacer(1, 1.2 * inch))
+
+    # Product branding
+    brand_style = ParagraphStyle(
+        "ds_brand", parent=styles["subtitle"],
+        fontSize=11, textColor=NAVY, fontName="Helvetica-Bold",
+        spaceAfter=2,
+    )
+    story.append(Paragraph("datascope", brand_style))
+    story.append(Spacer(1, 0.05 * inch))
+
     story.append(Paragraph("Data Quality Diagnostic Report", styles["title"]))
     story.append(Spacer(1, 0.1 * inch))
 
@@ -195,7 +207,8 @@ def _build_title_page(
 
     date_str = datetime.date.today().strftime("%B %d, %Y")
     story.append(Paragraph(date_str, styles["subtitle"]))
-    story.append(Spacer(1, 0.3 * inch))
+    story.append(Paragraph(f"v{__version__}", styles["caption"]))
+    story.append(Spacer(1, 0.25 * inch))
 
     story.append(HRFlowable(width="60%", thickness=2, color=NAVY))
     story.append(Spacer(1, 0.3 * inch))
@@ -599,6 +612,8 @@ def write_pdf(
 
     filename = source_metadata.get("filename", "Unknown source")
 
+    from datascope import __version__
+
     def _on_later_pages(canvas, doc):
         canvas.saveState()
         canvas.setFont("Helvetica", 8)
@@ -606,6 +621,10 @@ def write_pdf(
         canvas.drawString(
             0.5 * inch, letter[1] - 0.4 * inch,
             f"datascope diagnostic — {filename}",
+        )
+        canvas.drawString(
+            0.5 * inch, 0.35 * inch,
+            f"datascope v{__version__} — pip install datascope-dq",
         )
         canvas.drawRightString(
             letter[0] - 0.5 * inch, 0.35 * inch,

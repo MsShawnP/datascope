@@ -11,7 +11,10 @@ samples/
 │   └── sample_mixed_types.xlsx
 └── output/                 # Diagnostic reports produced by datascope
     ├── sample_sales_diagnostic.pdf
-    └── sample_mixed_types_diagnostic.pdf
+    ├── sample_sales_diagnostic.html
+    ├── sample_mixed_types_diagnostic.pdf
+    ├── sample_mixed_types_diagnostic.html
+    └── sample_mixed_types_annotated.xlsx
 ```
 
 ## Inputs
@@ -23,11 +26,11 @@ samples/
 
 ## Outputs
 
-Each input file produces a PDF diagnostic report with:
+Each input file produces diagnostic reports in multiple formats:
 
-- **Executive summary** — overall health assessment, finding counts by severity
-- **Findings by severity** — each finding as an assumption-vs-reality card with impact, fix, and prevention rule
-- **Field inventory** — summary table of all columns with detected issue types
+- **PDF** — professional report with executive summary, severity-coded finding cards, and field inventory
+- **HTML** — self-contained web page with the same structure (open in any browser)
+- **Annotated Excel** — source data with problem columns highlighted + a Findings summary sheet
 
 ## Regenerating
 

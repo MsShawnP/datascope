@@ -1,9 +1,47 @@
 # datascope — Improvement Plan
 
-Derived from full project audit (2026-05-15). See AUDIT.md for rationale.
+Derived from project audits (2026-05-15, 2026-05-16). See AUDIT.md for rationale.
 
 Tier: Medium
-Current focus: All moves complete. Improvement plan fully executed.
+Current focus: Move 1 DEMO-PROOF — fix demo-killers before sharing with prospects.
+
+---
+
+## Decomposition: Move 1 DEMO-PROOF
+
+Goal: A prospect can run `datascope` on any file during a live call without encountering crashes, grammar errors, or stale documentation.
+
+### Steps
+
+- [x] A1: Catch invalid `--sheet` with friendly error messages
+    - Depends on: none
+    - Change: Wrap the sheet lookup in `loaders/excel.py` with try/except for `IndexError` (numeric) and `KeyError` (named). Raise `ValueError` with a message listing available sheets.
+    - Done when: `datascope samples/input/sample_mixed_types.xlsx --sheet 99` and `--sheet NonExistent` both print "Error: Sheet not found..." to stderr and exit 1 (no traceback).
+
+- [x] A2: Fix singular/plural grammar in narrative templates
+    - Depends on: none
+    - Change: In `findings/templates.py`, fix `type_inconsistency()` — "X value were" → conditional "was"/"were"; in `sentinel_value()` — "(N times)" → conditional "(1 time)"/"(N times)". Audit all 7 template functions for similar issues.
+    - Done when: `datascope` on a file with exactly 1 minority-type value outputs "1 str value was found"; sentinel with count=1 outputs "(1 time)"; `python -m pytest tests/` still passes.
+
+- [x] A3: Update argparse description to include Parquet
+    - Depends on: none
+    - Change: In `cli.py` line 30-33, update description from ".xlsx or .csv" to ".xlsx, .csv, or .parquet".
+    - Done when: `datascope --help` output mentions all three formats.
+
+- [x] A4: Fix numpy dependency in `generate_sample.py`
+    - Depends on: none
+    - Change: Add `numpy>=1.24.0` to `[project.optional-dependencies] dev` in `pyproject.toml` (it's already a dev-time tool, not needed at runtime). Update `requirements-dev.txt` if it exists.
+    - Done when: `pip install -e ".[dev]" && python generate_sample.py` succeeds; numpy is NOT in `[project.dependencies]`.
+
+- [x] A5: Warn when `--sheet` is passed for non-Excel files
+    - Depends on: A1 (sheet error handling should be in place first)
+    - Change: In `cli.py`, after resolving `ext`, if `ext != ".xlsx"` and `args.sheet is not None`, print a warning to stderr: "Warning: --sheet is ignored for {ext} files."
+    - Done when: `datascope somefile.csv --sheet Revenue` prints the warning to stderr but still runs successfully.
+
+- [x] A6: Integration verification
+    - Depends on: A1-A5 all complete
+    - Run full test suite, run all 5 output formats on both sample files, test the error paths manually.
+    - Done when: `python -m pytest tests/` passes (283+ tests); all manual edge cases produce friendly output (no tracebacks).
 
 ---
 
