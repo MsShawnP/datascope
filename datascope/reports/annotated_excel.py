@@ -17,12 +17,12 @@ from openpyxl.utils import get_column_letter
 from datascope.models import Finding, FindingType, Severity
 
 _SEVERITY_FILLS = {
-    Severity.CRITICAL: PatternFill(start_color="FADBD8", end_color="FADBD8", fill_type="solid"),
-    Severity.WARNING: PatternFill(start_color="FDEBD0", end_color="FDEBD0", fill_type="solid"),
-    Severity.INFO: PatternFill(start_color="D6EAF8", end_color="D6EAF8", fill_type="solid"),
+    Severity.CRITICAL: PatternFill(start_color="FCE8E7", end_color="FCE8E7", fill_type="solid"),
+    Severity.WARNING: PatternFill(start_color="FDEEE0", end_color="FDEEE0", fill_type="solid"),
+    Severity.INFO: PatternFill(start_color="E8EAF4", end_color="E8EAF4", fill_type="solid"),
 }
 
-_HEADER_FILL = PatternFill(start_color="1F3864", end_color="1F3864", fill_type="solid")
+_HEADER_FILL = PatternFill(start_color="1F2E7A", end_color="1F2E7A", fill_type="solid")
 _HEADER_FONT = Font(color="FFFFFF", bold=True, size=10)
 
 _FINDING_TYPE_LABELS: dict[FindingType, str] = {
@@ -82,10 +82,7 @@ def write_annotated_excel(
         cell.fill = _HEADER_FILL
         cell.font = _HEADER_FONT
         if header in field_to_severity:
-            sev = field_to_severity[header]
-            fill = _SEVERITY_FILLS[sev]
-            cell.fill = fill
-            cell.font = Font(bold=True, size=10)
+            pass
 
     for row_idx, row_data in enumerate(source_data, start=2):
         for col_idx, value in enumerate(row_data, start=1):

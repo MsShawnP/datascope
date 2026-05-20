@@ -24,10 +24,12 @@ _SEVERITY_LABELS = {
 }
 
 _SEVERITY_COLORS = {
-    Severity.CRITICAL: ("#C0392B", "#FADBD8"),
-    Severity.WARNING: ("#E67E22", "#FDEBD0"),
-    Severity.INFO: ("#2E86AB", "#D6EAF8"),
+    Severity.CRITICAL: ("#a80d08", "#fce8e7"),   # Red-30 badge, Red-95 tint
+    Severity.WARNING: ("#a05a1a", "#fdeee0"),     # Singapore-35 badge, SG-95 tint
+    Severity.INFO: ("#3348a8", "#e8eaf4"),        # Chicago-40 badge, Chicago-95 tint
 }
+
+_HEADER_BG = "#1f2e7a"
 
 _FINDING_TYPE_LABELS: dict[FindingType, str] = {
     FindingType.TYPE_INCONSISTENCY: "Type Inconsistency",
@@ -184,44 +186,50 @@ def write_html(
 <title>datascope diagnostic — {_e(filename)}</title>
 <style>
   * {{ margin: 0; padding: 0; box-sizing: border-box; }}
-  body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-         color: #333; background: #f5f6fa; line-height: 1.6; }}
-  .container {{ max-width: 900px; margin: 0 auto; padding: 20px; }}
+  body {{ font-family: 'Source Sans 3', 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+         color: #333333; background: #f5f3ee; line-height: 1.6; }}
+  .container {{ max-width: 900px; margin: 0 auto; padding: 48px 24px; }}
   .title-section {{ text-align: center; padding: 40px 0 20px; }}
-  .title-section h1 {{ color: #1F3864; font-size: 28px; margin-bottom: 4px; }}
-  .title-section .subtitle {{ color: #888; font-size: 14px; }}
-  .summary-row {{ display: flex; gap: 16px; margin: 20px 0; justify-content: center; }}
-  .summary-card {{ background: white; border-radius: 8px; padding: 20px 32px;
-                   text-align: center; box-shadow: 0 1px 3px rgba(0,0,0,.1); }}
-  .summary-number {{ font-size: 32px; font-weight: bold; color: #1F3864; }}
-  .summary-label {{ font-size: 13px; color: #666; }}
-  .health {{ background: white; border-radius: 8px; padding: 16px 20px;
-             margin: 16px 0 24px; box-shadow: 0 1px 3px rgba(0,0,0,.1); }}
-  .health p {{ font-size: 14px; }}
-  h2 {{ color: #1F3864; font-size: 18px; margin: 28px 0 12px; }}
-  .finding-card {{ background: white; border-radius: 8px; padding: 16px 20px;
-                   margin-bottom: 12px; box-shadow: 0 1px 3px rgba(0,0,0,.1); }}
+  .title-section h1 {{ font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+                        color: #0d0d0d; font-size: 28px; font-weight: 700; margin-bottom: 4px; }}
+  .title-section .subtitle {{ color: #595959; font-size: 14px; }}
+  .summary-row {{ display: flex; gap: 16px; margin: 24px 0; justify-content: center; }}
+  .summary-card {{ background: #ffffff; border: 1px solid #d9d9d9; border-radius: 2px;
+                   padding: 20px 32px; text-align: center; }}
+  .summary-number {{ font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+                     font-size: 32px; font-weight: 700; color: #0d0d0d; }}
+  .summary-label {{ font-size: 13px; color: #595959; font-weight: 600; }}
+  .health {{ background: #ffffff; border: 1px solid #d9d9d9; border-radius: 2px;
+             padding: 16px 20px; margin: 16px 0 24px; }}
+  .health p {{ font-size: 14px; color: #333333; }}
+  h2 {{ font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
+        color: #0d0d0d; font-size: 18px; font-weight: 700; margin: 28px 0 12px; }}
+  hr {{ border: none; border-top: 1px solid #d9d9d9; margin: 0 0 12px; }}
+  .finding-card {{ background: #ffffff; border: 1px solid #d9d9d9; border-radius: 2px;
+                   padding: 16px 20px; margin-bottom: 12px; }}
   .finding-header {{ display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }}
   .badge {{ color: white; font-size: 11px; font-weight: 600; padding: 2px 10px;
-            border-radius: 4px; text-transform: uppercase; }}
+            border-radius: 2px; text-transform: uppercase; }}
   .badge-sm {{ color: white; font-size: 10px; font-weight: 600; padding: 1px 8px;
-               border-radius: 3px; }}
-  .field-name {{ font-weight: 600; font-size: 15px; color: #1F3864; }}
-  .finding-type {{ font-size: 12px; color: #888; }}
-  .finding-body p {{ font-size: 13px; margin-bottom: 6px; }}
-  .finding-body strong {{ color: #1F3864; }}
-  table {{ width: 100%; border-collapse: collapse; background: white;
-           border-radius: 8px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,.1); }}
-  th {{ background: #1F3864; color: white; padding: 10px 14px; text-align: left; font-size: 13px; }}
-  td {{ padding: 8px 14px; font-size: 13px; border-bottom: 1px solid #eee; }}
-  tr:nth-child(even) {{ background: #f9fafb; }}
-  .footer {{ text-align: center; padding: 24px 0; color: #aaa; font-size: 12px; }}
+               border-radius: 2px; }}
+  .field-name {{ font-weight: 600; font-size: 15px; color: #0d0d0d; }}
+  .finding-type {{ font-size: 12px; color: #595959; }}
+  .finding-body p {{ font-size: 13px; margin-bottom: 6px; color: #333333; }}
+  .finding-body strong {{ color: #0d0d0d; }}
+  table {{ width: 100%; border-collapse: collapse; background: #ffffff;
+           border: 1px solid #d9d9d9; border-radius: 2px; overflow: hidden; }}
+  th {{ background: {_HEADER_BG}; color: white; padding: 10px 14px; text-align: left;
+        font-size: 13px; font-weight: 600; }}
+  td {{ padding: 8px 14px; font-size: 13px; border-bottom: 1px solid #e0e0e0; color: #333333; }}
+  tr:nth-child(even) {{ background: #f2f2f2; }}
+  .footer {{ text-align: center; padding: 24px 0; color: #595959; font-size: 11px;
+             font-style: italic; }}
 </style>
 </head>
 <body>
 <div class="container">
   <div class="title-section">
-    <h1>datascope diagnostic</h1>
+    <h1>Data Quality Diagnostic</h1>
     <div class="subtitle">{_e(filename)} &middot; {rows} rows &times; {cols} columns &middot; {now}</div>
   </div>
 

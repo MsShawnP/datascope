@@ -37,25 +37,30 @@ from reportlab.platypus import (
 from datascope.models import Finding, FindingType, Severity
 
 # ---------------------------------------------------------------------------
-# Colour palette
+# Colour palette — Lailara Design System v2 (city-named families)
+# Times-Bold / Helvetica are reportlab built-in approximations for
+# Playfair Display / Source Sans 3; full match requires TTF registration.
 # ---------------------------------------------------------------------------
 
-NAVY = colors.HexColor("#1F3864")
-LIGHT_BLUE = colors.HexColor("#D9E1F2")
-ALT_ROW = colors.HexColor("#EEF2F7")
+CHICAGO_20 = colors.HexColor("#1f2e7a")  # primary accent, header fills
+LONDON_95 = colors.HexColor("#f2f2f2")   # alt-row background
+LONDON_85 = colors.HexColor("#d9d9d9")   # gridlines, borders
+LONDON_35 = colors.HexColor("#595959")   # secondary text, captions
+LONDON_20 = colors.HexColor("#333333")   # body text
+LONDON_5 = colors.HexColor("#0d0d0d")    # ink, headings
 WHITE = colors.white
 
-# Severity colours -- professional tones.
-CRITICAL_BG = colors.HexColor("#C0392B")
-WARNING_BG = colors.HexColor("#E67E22")
-INFO_BG = colors.HexColor("#2E86AB")
+# Badge fills use darker family steps — Red-42 is reserved for text/rules only.
+CRITICAL_BG = colors.HexColor("#a80d08")  # Red-30
+WARNING_BG = colors.HexColor("#a05a1a")   # Singapore-35
+INFO_BG = colors.HexColor("#3348a8")      # Chicago-40
 
-# Lighter tints for card backgrounds.
-CRITICAL_TINT = colors.HexColor("#FADBD8")
-WARNING_TINT = colors.HexColor("#FDEBD0")
-INFO_TINT = colors.HexColor("#D6EAF8")
+CRITICAL_TINT = colors.HexColor("#fce8e7")
+WARNING_TINT = colors.HexColor("#fdeee0")
+INFO_TINT = colors.HexColor("#e8eaf4")
 
-GRID_COLOR = colors.HexColor("#CCCCCC")
+HK_35 = colors.HexColor("#158f75")
+GRID_COLOR = LONDON_85
 
 _SEVERITY_COLORS: dict[Severity, colors.HexColor] = {
     Severity.CRITICAL: CRITICAL_BG,
@@ -101,38 +106,42 @@ def _build_styles() -> dict[str, ParagraphStyle]:
     return {
         "title": ParagraphStyle(
             "ds_title", parent=base["Title"],
-            fontSize=24, textColor=NAVY, spaceAfter=6,
+            fontName="Times-Bold",
+            fontSize=24, textColor=LONDON_5, spaceAfter=6,
             alignment=TA_CENTER,
         ),
         "subtitle": ParagraphStyle(
             "ds_subtitle", parent=base["Normal"],
-            fontSize=12, textColor=colors.grey, spaceAfter=4,
+            fontSize=12, textColor=LONDON_35, spaceAfter=4,
             alignment=TA_CENTER,
         ),
         "h1": ParagraphStyle(
             "ds_h1", parent=base["Heading1"],
-            fontSize=16, textColor=NAVY, spaceAfter=6,
+            fontName="Times-Bold",
+            fontSize=16, textColor=LONDON_5, spaceAfter=6,
         ),
         "h2": ParagraphStyle(
             "ds_h2", parent=base["Heading2"],
-            fontSize=13, textColor=NAVY, spaceAfter=4,
+            fontName="Times-Bold",
+            fontSize=13, textColor=LONDON_5, spaceAfter=4,
         ),
         "h3": ParagraphStyle(
             "ds_h3", parent=base["Heading3"],
-            fontSize=11, textColor=NAVY, spaceAfter=2,
+            fontName="Times-Bold",
+            fontSize=11, textColor=LONDON_5, spaceAfter=2,
         ),
         "body": ParagraphStyle(
             "ds_body", parent=base["Normal"],
-            fontSize=9, spaceAfter=4, leading=13,
+            fontSize=9, textColor=LONDON_20, spaceAfter=4, leading=13,
         ),
         "body_bold": ParagraphStyle(
             "ds_body_bold", parent=base["Normal"],
-            fontSize=9, spaceAfter=4, leading=13,
+            fontSize=9, textColor=LONDON_20, spaceAfter=4, leading=13,
             fontName="Helvetica-Bold",
         ),
         "caption": ParagraphStyle(
             "ds_caption", parent=base["Normal"],
-            fontSize=8, textColor=colors.grey, spaceAfter=6,
+            fontSize=8, textColor=LONDON_35, spaceAfter=6,
         ),
         "badge": ParagraphStyle(
             "ds_badge", parent=base["Normal"],
@@ -141,8 +150,9 @@ def _build_styles() -> dict[str, ParagraphStyle]:
         ),
         "summary_number": ParagraphStyle(
             "ds_summary_number", parent=base["Normal"],
+            fontName="Times-Bold",
             fontSize=28, alignment=TA_CENTER,
-            fontName="Helvetica-Bold", leading=34, spaceAfter=0,
+            leading=34, spaceAfter=0,
         ),
         "summary_label": ParagraphStyle(
             "ds_summary_label", parent=base["Normal"],
@@ -151,16 +161,16 @@ def _build_styles() -> dict[str, ParagraphStyle]:
         ),
         "card_label": ParagraphStyle(
             "ds_card_label", parent=base["Normal"],
-            fontSize=8, textColor=colors.grey, spaceAfter=1,
+            fontSize=8, textColor=LONDON_35, spaceAfter=1,
             fontName="Helvetica-Bold",
         ),
         "card_text": ParagraphStyle(
             "ds_card_text", parent=base["Normal"],
-            fontSize=9, spaceAfter=4, leading=12,
+            fontSize=9, textColor=LONDON_20, spaceAfter=4, leading=12,
         ),
         "no_issues": ParagraphStyle(
             "ds_no_issues", parent=base["Normal"],
-            fontSize=12, textColor=colors.HexColor("#27AE60"),
+            fontSize=12, textColor=HK_35,
             alignment=TA_CENTER, spaceAfter=10,
         ),
     }
@@ -210,7 +220,7 @@ def _build_title_page(
     story.append(Paragraph(f"v{__version__}", styles["caption"]))
     story.append(Spacer(1, 0.25 * inch))
 
-    story.append(HRFlowable(width="60%", thickness=2, color=NAVY))
+    story.append(HRFlowable(width="60%", thickness=2, color=CHICAGO_20))
     story.append(Spacer(1, 0.3 * inch))
 
     # Summary counts as a small centered table.
@@ -304,7 +314,7 @@ def _build_executive_summary(
 ) -> None:
     """Append the executive summary section to *story*."""
     story.append(Paragraph("Executive Summary", styles["h1"]))
-    story.append(HRFlowable(width="100%", thickness=1, color=NAVY))
+    story.append(HRFlowable(width="100%", thickness=1, color=CHICAGO_20))
     story.append(Spacer(1, 0.1 * inch))
 
     story.append(Paragraph(_health_assessment(counts), styles["body"]))
@@ -436,7 +446,7 @@ def _build_findings_section(
 ) -> None:
     """Append the findings-by-severity section to *story*."""
     story.append(Paragraph("Detailed Findings", styles["h1"]))
-    story.append(HRFlowable(width="100%", thickness=1, color=NAVY))
+    story.append(HRFlowable(width="100%", thickness=1, color=CHICAGO_20))
     story.append(Spacer(1, 0.1 * inch))
 
     if not findings:
@@ -484,7 +494,7 @@ def _build_field_inventory(
 ) -> None:
     """Append the field inventory table to *story*."""
     story.append(Paragraph("Field Inventory", styles["h1"]))
-    story.append(HRFlowable(width="100%", thickness=1, color=NAVY))
+    story.append(HRFlowable(width="100%", thickness=1, color=CHICAGO_20))
     story.append(Spacer(1, 0.1 * inch))
     story.append(Paragraph(
         "Summary of all fields with detected issues.",
@@ -534,7 +544,7 @@ def _build_field_inventory(
     tbl = Table(rows, colWidths=col_widths, repeatRows=1)
 
     style_cmds = [
-        ("BACKGROUND", (0, 0), (-1, 0), NAVY),
+        ("BACKGROUND", (0, 0), (-1, 0), CHICAGO_20),
         ("TEXTCOLOR", (0, 0), (-1, 0), WHITE),
         ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
         ("FONTSIZE", (0, 0), (-1, -1), 8),
@@ -545,7 +555,7 @@ def _build_field_inventory(
         ("ALIGN", (2, 1), (2, -1), "CENTER"),
         ("ALIGN", (3, 1), (3, -1), "CENTER"),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [WHITE, ALT_ROW]),
+        ("ROWBACKGROUNDS", (0, 1), (-1, -1), [WHITE, LONDON_95]),
         ("GRID", (0, 0), (-1, -1), 0.5, GRID_COLOR),
         ("TOPPADDING", (0, 0), (-1, -1), 4),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
@@ -617,7 +627,7 @@ def write_pdf(
     def _on_later_pages(canvas, doc):
         canvas.saveState()
         canvas.setFont("Helvetica", 8)
-        canvas.setFillColor(colors.HexColor("#666666"))
+        canvas.setFillColor(LONDON_35)
         canvas.drawString(
             0.5 * inch, letter[1] - 0.4 * inch,
             f"datascope diagnostic — {filename}",
