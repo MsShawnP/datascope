@@ -34,32 +34,46 @@ from reportlab.platypus import (
     TableStyle,
 )
 
-from datascope.models import Finding, FindingType, Severity
+from datascope.models import Finding, Severity
+from datascope.reports._palette import (
+    CHICAGO_20_HEX,
+    CRITICAL_BG_HEX,
+    CRITICAL_TINT_HEX,
+    FINDING_TYPE_LABELS,
+    HK_35_HEX,
+    INFO_BG_HEX,
+    INFO_TINT_HEX,
+    LONDON_20_HEX,
+    LONDON_35_HEX,
+    LONDON_5_HEX,
+    LONDON_85_HEX,
+    LONDON_95_HEX,
+    SEVERITY_LABELS,
+    WARNING_BG_HEX,
+    WARNING_TINT_HEX,
+)
 
 # ---------------------------------------------------------------------------
-# Colour palette — Lailara Design System v2 (city-named families)
-# Times-Bold / Helvetica are reportlab built-in approximations for
-# Playfair Display / Source Sans 3; full match requires TTF registration.
+# reportlab color objects derived from the shared palette
 # ---------------------------------------------------------------------------
 
-CHICAGO_20 = colors.HexColor("#1f2e7a")  # primary accent, header fills
-LONDON_95 = colors.HexColor("#f2f2f2")   # alt-row background
-LONDON_85 = colors.HexColor("#d9d9d9")   # gridlines, borders
-LONDON_35 = colors.HexColor("#595959")   # secondary text, captions
-LONDON_20 = colors.HexColor("#333333")   # body text
-LONDON_5 = colors.HexColor("#0d0d0d")    # ink, headings
+CHICAGO_20 = colors.HexColor(CHICAGO_20_HEX)
+LONDON_95 = colors.HexColor(LONDON_95_HEX)
+LONDON_85 = colors.HexColor(LONDON_85_HEX)
+LONDON_35 = colors.HexColor(LONDON_35_HEX)
+LONDON_20 = colors.HexColor(LONDON_20_HEX)
+LONDON_5 = colors.HexColor(LONDON_5_HEX)
 WHITE = colors.white
 
-# Badge fills use darker family steps — Red-42 is reserved for text/rules only.
-CRITICAL_BG = colors.HexColor("#a80d08")  # Red-30
-WARNING_BG = colors.HexColor("#a05a1a")   # Singapore-35
-INFO_BG = colors.HexColor("#3348a8")      # Chicago-40
+CRITICAL_BG = colors.HexColor(CRITICAL_BG_HEX)
+WARNING_BG = colors.HexColor(WARNING_BG_HEX)
+INFO_BG = colors.HexColor(INFO_BG_HEX)
 
-CRITICAL_TINT = colors.HexColor("#fce8e7")
-WARNING_TINT = colors.HexColor("#fdeee0")
-INFO_TINT = colors.HexColor("#e8eaf4")
+CRITICAL_TINT = colors.HexColor(CRITICAL_TINT_HEX)
+WARNING_TINT = colors.HexColor(WARNING_TINT_HEX)
+INFO_TINT = colors.HexColor(INFO_TINT_HEX)
 
-HK_35 = colors.HexColor("#158f75")
+HK_35 = colors.HexColor(HK_35_HEX)
 GRID_COLOR = LONDON_85
 
 _SEVERITY_COLORS: dict[Severity, colors.HexColor] = {
@@ -72,22 +86,6 @@ _SEVERITY_TINTS: dict[Severity, colors.HexColor] = {
     Severity.CRITICAL: CRITICAL_TINT,
     Severity.WARNING: WARNING_TINT,
     Severity.INFO: INFO_TINT,
-}
-
-_SEVERITY_LABELS: dict[Severity, str] = {
-    Severity.CRITICAL: "Critical",
-    Severity.WARNING: "Warning",
-    Severity.INFO: "Info",
-}
-
-_FINDING_TYPE_LABELS: dict[FindingType, str] = {
-    FindingType.TYPE_INCONSISTENCY: "Type Inconsistency",
-    FindingType.SENTINEL_VALUE: "Sentinel Value",
-    FindingType.LEADING_ZEROS: "Leading Zeros",
-    FindingType.MIXED_DATES: "Mixed Date Formats",
-    FindingType.NEAR_CONSTANT: "Near-Constant Column",
-    FindingType.DUPLICATE_IDS: "Suspected Duplicate IDs",
-    FindingType.MISSING_VALUE_PATTERN: "Missing Values",
 }
 
 # Page geometry.
@@ -325,7 +323,7 @@ def _build_executive_summary(
     if critical:
         story.append(Paragraph("Top Critical Findings", styles["h2"]))
         for finding in critical[:3]:
-            label = _FINDING_TYPE_LABELS.get(finding.finding_type, "Issue")
+            label = FINDING_TYPE_LABELS.get(finding.finding_type, "Issue")
             text = (
                 f"<b>{_safe(finding.field_name)}</b> ({label}): "
                 f"{_safe(finding.reality or '')}"
@@ -362,8 +360,8 @@ def _build_finding_card(
     sev = finding.severity or Severity.INFO
     tint = _SEVERITY_TINTS.get(sev, INFO_TINT)
     badge_color = _SEVERITY_COLORS.get(sev, INFO_BG)
-    badge_label = _SEVERITY_LABELS.get(sev, "Info")
-    type_label = _FINDING_TYPE_LABELS.get(finding.finding_type, "Issue")
+    badge_label = SEVERITY_LABELS.get(sev, "Info")
+    type_label = FINDING_TYPE_LABELS.get(finding.finding_type, "Issue")
 
     # Card header row: badge | field name | finding type
     badge_style = ParagraphStyle(
@@ -462,7 +460,7 @@ def _build_findings_section(
         if not tier_findings:
             continue
 
-        label = _SEVERITY_LABELS[severity]
+        label = SEVERITY_LABELS[severity]
         color = _SEVERITY_COLORS[severity]
         story.append(Paragraph(
             f"{label} ({len(tier_findings)})",
@@ -516,7 +514,7 @@ def _build_field_inventory(
     })
     for f in findings:
         entry = field_data[f.field_name]
-        entry["types"].add(_FINDING_TYPE_LABELS.get(f.finding_type, "Other"))
+        entry["types"].add(FINDING_TYPE_LABELS.get(f.finding_type, "Other"))
         if f.severity is not None:
             entry["severities"].add(f.severity)
         entry["count"] += 1
@@ -529,7 +527,7 @@ def _build_field_inventory(
         types_str = ", ".join(sorted(entry["types"]))
         if entry["severities"]:
             max_sev = max(entry["severities"])
-            sev_str = _SEVERITY_LABELS.get(max_sev, "Unknown")
+            sev_str = SEVERITY_LABELS.get(max_sev, "Unknown")
         else:
             sev_str = "Unknown"
         rows.append([field_name, types_str, sev_str, str(entry["count"])])
@@ -566,7 +564,7 @@ def _build_field_inventory(
     # Colour-code the severity column per row.
     for row_idx in range(1, len(rows)):
         sev_text = rows[row_idx][2]
-        for sev, label in _SEVERITY_LABELS.items():
+        for sev, label in SEVERITY_LABELS.items():
             if sev_text == label:
                 style_cmds.append(
                     ("TEXTCOLOR", (2, row_idx), (2, row_idx), _SEVERITY_COLORS[sev])

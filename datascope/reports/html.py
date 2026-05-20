@@ -13,33 +13,14 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
-from datascope.models import Finding, FindingType, Severity
-
-_SEVERITY_ORDER = [Severity.CRITICAL, Severity.WARNING, Severity.INFO]
-
-_SEVERITY_LABELS = {
-    Severity.CRITICAL: "Critical",
-    Severity.WARNING: "Warning",
-    Severity.INFO: "Info",
-}
-
-_SEVERITY_COLORS = {
-    Severity.CRITICAL: ("#a80d08", "#fce8e7"),   # Red-30 badge, Red-95 tint
-    Severity.WARNING: ("#a05a1a", "#fdeee0"),     # Singapore-35 badge, SG-95 tint
-    Severity.INFO: ("#3348a8", "#e8eaf4"),        # Chicago-40 badge, Chicago-95 tint
-}
-
-_HEADER_BG = "#1f2e7a"
-
-_FINDING_TYPE_LABELS: dict[FindingType, str] = {
-    FindingType.TYPE_INCONSISTENCY: "Type Inconsistency",
-    FindingType.SENTINEL_VALUE: "Sentinel Value",
-    FindingType.LEADING_ZEROS: "Leading Zeros",
-    FindingType.MIXED_DATES: "Mixed Date Formats",
-    FindingType.NEAR_CONSTANT: "Near-Constant Column",
-    FindingType.DUPLICATE_IDS: "Suspected Duplicate IDs",
-    FindingType.MISSING_VALUE_PATTERN: "Missing Values",
-}
+from datascope.models import Finding, Severity
+from datascope.reports._palette import (
+    CHICAGO_20_HEX,
+    FINDING_TYPE_LABELS,
+    SEVERITY_COLORS,
+    SEVERITY_LABELS,
+    SEVERITY_ORDER,
+)
 
 
 def _e(text: str | None) -> str:
@@ -51,9 +32,9 @@ def _e(text: str | None) -> str:
 
 def _health_assessment(findings: list[Finding]) -> str:
     counts: dict[Severity, int] = {s: 0 for s in Severity}
-    for f in findings:
-        if f.severity is not None:
-            counts[f.severity] += 1
+    for finding in findings:
+        if finding.severity is not None:
+            counts[finding.severity] += 1
 
     crit = counts[Severity.CRITICAL]
     warn = counts[Severity.WARNING]
@@ -81,9 +62,9 @@ def _health_assessment(findings: list[Finding]) -> str:
 
 def _render_finding_card(finding: Finding) -> str:
     sev = finding.severity or Severity.INFO
-    accent, tint = _SEVERITY_COLORS[sev]
-    label = _SEVERITY_LABELS[sev]
-    type_label = _FINDING_TYPE_LABELS.get(finding.finding_type, finding.finding_type.value)
+    accent, tint = SEVERITY_COLORS[sev]
+    label = SEVERITY_LABELS[sev]
+    type_label = FINDING_TYPE_LABELS.get(finding.finding_type, finding.finding_type.value)
 
     sections = []
     if finding.assumption:
@@ -137,9 +118,9 @@ def write_html(
     health = _health_assessment(findings)
 
     summary_cards = ""
-    for sev in _SEVERITY_ORDER:
-        accent, _ = _SEVERITY_COLORS[sev]
-        label = _SEVERITY_LABELS[sev]
+    for sev in SEVERITY_ORDER:
+        accent, _ = SEVERITY_COLORS[sev]
+        label = SEVERITY_LABELS[sev]
         c = counts[sev]
         summary_cards += f"""
         <div class="summary-card" style="border-top: 3px solid {accent};">
@@ -149,10 +130,10 @@ def write_html(
         """
 
     finding_sections = ""
-    for sev in _SEVERITY_ORDER:
+    for sev in SEVERITY_ORDER:
         if sev not in grouped:
             continue
-        label = _SEVERITY_LABELS[sev]
+        label = SEVERITY_LABELS[sev]
         cards = "\n".join(_render_finding_card(f) for f in grouped[sev])
         finding_sections += f"""
         <h2>{label} Findings</h2>
@@ -162,9 +143,9 @@ def write_html(
     field_rows = ""
     for f in findings:
         sev = f.severity or Severity.INFO
-        accent, _ = _SEVERITY_COLORS[sev]
-        label = _SEVERITY_LABELS[sev]
-        type_label = _FINDING_TYPE_LABELS.get(f.finding_type, f.finding_type.value)
+        accent, _ = SEVERITY_COLORS[sev]
+        label = SEVERITY_LABELS[sev]
+        type_label = FINDING_TYPE_LABELS.get(f.finding_type, f.finding_type.value)
         field_rows += f"""
         <tr>
           <td>{_e(f.field_name)}</td>
@@ -218,7 +199,7 @@ def write_html(
   .finding-body strong {{ color: #0d0d0d; }}
   table {{ width: 100%; border-collapse: collapse; background: #ffffff;
            border: 1px solid #d9d9d9; border-radius: 2px; overflow: hidden; }}
-  th {{ background: {_HEADER_BG}; color: white; padding: 10px 14px; text-align: left;
+  th {{ background: {CHICAGO_20_HEX}; color: white; padding: 10px 14px; text-align: left;
         font-size: 13px; font-weight: 600; }}
   td {{ padding: 8px 14px; font-size: 13px; border-bottom: 1px solid #e0e0e0; color: #333333; }}
   tr:nth-child(even) {{ background: #f2f2f2; }}

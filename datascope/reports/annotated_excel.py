@@ -14,32 +14,24 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill
 from openpyxl.utils import get_column_letter
 
-from datascope.models import Finding, FindingType, Severity
+from datascope.models import Finding, Severity
+from datascope.reports._palette import (
+    CHICAGO_20_HEX,
+    CRITICAL_TINT_HEX,
+    FINDING_TYPE_LABELS,
+    INFO_TINT_HEX,
+    SEVERITY_LABELS,
+    WARNING_TINT_HEX,
+)
 
 _SEVERITY_FILLS = {
-    Severity.CRITICAL: PatternFill(start_color="FCE8E7", end_color="FCE8E7", fill_type="solid"),
-    Severity.WARNING: PatternFill(start_color="FDEEE0", end_color="FDEEE0", fill_type="solid"),
-    Severity.INFO: PatternFill(start_color="E8EAF4", end_color="E8EAF4", fill_type="solid"),
+    Severity.CRITICAL: PatternFill(start_color=CRITICAL_TINT_HEX[1:], end_color=CRITICAL_TINT_HEX[1:], fill_type="solid"),
+    Severity.WARNING: PatternFill(start_color=WARNING_TINT_HEX[1:], end_color=WARNING_TINT_HEX[1:], fill_type="solid"),
+    Severity.INFO: PatternFill(start_color=INFO_TINT_HEX[1:], end_color=INFO_TINT_HEX[1:], fill_type="solid"),
 }
 
-_HEADER_FILL = PatternFill(start_color="1F2E7A", end_color="1F2E7A", fill_type="solid")
+_HEADER_FILL = PatternFill(start_color=CHICAGO_20_HEX[1:], end_color=CHICAGO_20_HEX[1:], fill_type="solid")
 _HEADER_FONT = Font(color="FFFFFF", bold=True, size=10)
-
-_FINDING_TYPE_LABELS: dict[FindingType, str] = {
-    FindingType.TYPE_INCONSISTENCY: "Type Inconsistency",
-    FindingType.SENTINEL_VALUE: "Sentinel Value",
-    FindingType.LEADING_ZEROS: "Leading Zeros",
-    FindingType.MIXED_DATES: "Mixed Date Formats",
-    FindingType.NEAR_CONSTANT: "Near-Constant Column",
-    FindingType.DUPLICATE_IDS: "Suspected Duplicate IDs",
-    FindingType.MISSING_VALUE_PATTERN: "Missing Values",
-}
-
-_SEVERITY_LABELS = {
-    Severity.CRITICAL: "Critical",
-    Severity.WARNING: "Warning",
-    Severity.INFO: "Info",
-}
 
 
 def write_annotated_excel(
@@ -107,8 +99,8 @@ def write_annotated_excel(
     for row_idx, f in enumerate(findings, start=2):
         sev = f.severity or Severity.INFO
         fill = _SEVERITY_FILLS[sev]
-        type_label = _FINDING_TYPE_LABELS.get(f.finding_type, f.finding_type.value)
-        sev_label = _SEVERITY_LABELS.get(sev, "Info")
+        type_label = FINDING_TYPE_LABELS.get(f.finding_type, f.finding_type.value)
+        sev_label = SEVERITY_LABELS.get(sev, "Info")
 
         values = [
             f.field_name,
