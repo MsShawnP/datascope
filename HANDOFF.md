@@ -1,9 +1,9 @@
 # Handoff
 
-## Session — 2026-05-20 (Brand kit + palette extraction)
+## Session — 2026-05-20 (Brand kit + palette + test coverage)
 
 **Phase:** Post-improvement — polish and maintenance
-**Goal:** Apply Lailara Design System brand kit to all report generators, run code review, resolve findings, extract shared palette module.
+**Goal:** Apply Lailara Design System brand kit, extract shared palette, add test coverage for HTML and Excel reports.
 **Completed:**
 - Applied Lailara Design System v2 colors/typography to pdf.py, html.py, annotated_excel.py
 - Added datascope to project-health.md tracker
@@ -13,10 +13,12 @@
 - Extracted `_HEADER_BG` constant in html.py (was hardcoded in CSS f-string)
 - Removed Excel header fill override on flagged columns (design system violation)
 - Extracted `datascope/reports/_palette.py` — single source of truth for hex tokens, severity labels, finding-type labels
-- All 283 tests pass
+- Added 70 tests: test_report_html.py (37) and test_report_annotated_excel.py (33)
+- Fixed undefined NAVY reference in pdf.py (rebase artifact from PR #6 merge)
+- 353 tests pass (up from 283)
 **Tried, didn't work:** Nothing notable
-**State:** Brand kit applied, palette deduplicated. All tests green.
-**Next concrete action:** Greenfield — potential next steps: run `/improve`, add test coverage for html.py and annotated_excel.py, or run a dependency audit.
+**State:** All report generators branded, deduplicated, and tested. 353 tests green.
+**Next concrete action:** Greenfield — potential next steps: run `/improve`, or run a dependency audit.
 **Blockers:** None
 
 ---
