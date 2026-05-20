@@ -7,6 +7,7 @@ by severity, and field inventory.
 
 from __future__ import annotations
 
+import base64
 import datetime
 import html
 from collections import defaultdict
@@ -21,6 +22,31 @@ from datascope.reports._palette import (
     SEVERITY_LABELS,
     SEVERITY_ORDER,
 )
+
+_FONTS_DIR = Path(__file__).parent / "fonts"
+
+
+def _font_face_css() -> str:
+    """Return @font-face rules with base64-embedded woff2 fonts."""
+    blocks: list[str] = []
+    for name, css_family, weight in [
+        ("playfair-display-latin.woff2", "Playfair Display", "400 700"),
+        ("source-sans-3-latin.woff2", "Source Sans 3", "400 700"),
+    ]:
+        path = _FONTS_DIR / name
+        if not path.exists():
+            continue
+        b64 = base64.b64encode(path.read_bytes()).decode("ascii")
+        blocks.append(
+            f"@font-face {{\n"
+            f"  font-family: '{css_family}';\n"
+            f"  font-style: normal;\n"
+            f"  font-weight: {weight};\n"
+            f"  font-display: swap;\n"
+            f"  src: url('data:font/woff2;base64,{b64}') format('woff2');\n"
+            f"}}"
+        )
+    return "\n".join(blocks)
 
 
 def _e(text: str | None) -> str:
@@ -166,6 +192,7 @@ def write_html(
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='40' fill='%231F3864'/><text x='50' y='62' font-size='40' text-anchor='middle' fill='white' font-family='sans-serif' font-weight='bold'>d</text></svg>">
 <title>datascope diagnostic — {_e(filename)}</title>
 <style>
+  {_font_face_css()}
   * {{ margin: 0; padding: 0; box-sizing: border-box; }}
   body {{ font-family: 'Source Sans 3', 'Source Sans Pro', 'Helvetica Neue', Helvetica, Arial, sans-serif;
          color: #333333; background: #f5f3ee; line-height: 1.6; }}
