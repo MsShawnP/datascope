@@ -1,5 +1,26 @@
 # Handoff
 
+## Session — 2026-05-20 (Brand kit + palette extraction)
+
+**Phase:** Post-improvement — polish and maintenance
+**Goal:** Apply Lailara Design System brand kit to all report generators, run code review, resolve findings, extract shared palette module.
+**Completed:**
+- Applied Lailara Design System v2 colors/typography to pdf.py, html.py, annotated_excel.py
+- Added datascope to project-health.md tracker
+- Ran 7-reviewer code review — 8 findings: 6 fixed, 1 deferred, 1 advisory
+- Fixed Red-42 brand accent violation (was used as badge fill, now uses darker family steps)
+- Removed unused CANVAS/CHICAGO_85 constants from pdf.py
+- Extracted `_HEADER_BG` constant in html.py (was hardcoded in CSS f-string)
+- Removed Excel header fill override on flagged columns (design system violation)
+- Extracted `datascope/reports/_palette.py` — single source of truth for hex tokens, severity labels, finding-type labels
+- All 283 tests pass
+**Tried, didn't work:** Nothing notable
+**State:** Brand kit applied, palette deduplicated. All tests green.
+**Next concrete action:** Greenfield — potential next steps: run `/improve`, add test coverage for html.py and annotated_excel.py, or run a dependency audit.
+**Blockers:** None
+
+---
+
 ## 2026-05-16 12:00 — Audit Round 2 + Demo-Proof
 
 **Started from:** v2.2.0 shipped. Preparing to share demo links with first prospects.
@@ -9,8 +30,6 @@
 **State:** PR #6 open with 3 commits. Tool is demo-safe — no crashes, branded reports, professional repo. 283 tests pass, lint clean. Move 4 (Growth) remains future work.
 
 **Next:** Merge PR #6 to main. Then either (a) start Move 4 growth work (landing page, demo video) or (b) rename local folder to "datascope" and begin client outreach. Tool is ready.
-
----
 
 ## Session — 2026-05-15 (Move 4 + tag v2.2.0)
 

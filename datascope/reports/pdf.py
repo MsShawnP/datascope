@@ -201,7 +201,7 @@ def _build_title_page(
     # Product branding
     brand_style = ParagraphStyle(
         "ds_brand", parent=styles["subtitle"],
-        fontSize=11, textColor=NAVY, fontName="Helvetica-Bold",
+        fontSize=11, textColor=CHICAGO_20, fontName="Helvetica-Bold",
         spaceAfter=2,
     )
     story.append(Paragraph("datascope", brand_style))
