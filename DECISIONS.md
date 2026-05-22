@@ -24,6 +24,12 @@ pyarrow is large (~200MB installed). Making it a core dependency would bloat ins
 
 Modern setuptools (isolated build env) rejects the `License :: OSI Approved :: MIT License` classifier when `license = "MIT"` is also present. Removed the classifier, keeping only the PEP 639 `license` string field. Future classifiers should not include license entries.
 
+## 2026-05-22: defusedxml removed; openpyxl handles XML safety internally
+
+- **Why:** `defusedxml` was listed as a dependency but never imported. It only works when explicitly imported before XML parsing (monkey-patches stdlib). Modern openpyxl (3.1+) handles XML parsing safely without it. The dependency added install weight with no protection.
+- **Scope:** datascope dependency management
+- **Do not:** Re-add defusedxml unless datascope starts parsing user-supplied XML outside of openpyxl (e.g., raw lxml usage).
+
 ## 2026-05-16: Stay in the file-audit niche; do not compete with pipeline tools
 
 - **Why:** GX owns rules, Pandera owns schemas, Soda owns databases, ydata owns stats. datascope's moat is cell-level detection + professional narrative reports for non-technical readers. Competing on their turf dilutes the positioning.

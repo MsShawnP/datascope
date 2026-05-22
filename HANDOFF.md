@@ -1,5 +1,17 @@
 # Handoff
 
+## Session — 2026-05-22 (First /improve pass + dep audit)
+
+**Started from:** All 25 plan tasks complete, v2.2.0 on PyPI, 353 tests green. Due for first `/improve` and dep audit.
+
+**Did:** Full `/improve` audit of all 26 source files. Fixed 9 findings: lint errors, dead defusedxml dep, duplicate health assessment logic (extracted shared function), duplicate DATE_LIKE_RE regex (csv_loader now imports from format_check), dead code in annotated_excel, help text missing parquet, bare CLAUDE.md. Upgraded pip (2 CVEs). Updated project health tracker.
+
+**State:** 353 tests pass, ruff clean, no security vulns, no dep CVEs. All report generators share health assessment logic and date regex. Next `/improve` due 2026-06-22, next dep audit due 2026-07-22.
+
+**Next:** Greenfield — no planned work. Options: `/ce:compound` to extract learnings, or start next features based on user feedback.
+
+---
+
 ## Session — 2026-05-20 (Brand kit + palette + test coverage)
 
 **Phase:** Post-improvement — polish and maintenance
