@@ -21,6 +21,10 @@ from datascope import __version__
 # Supported file extensions (lower-cased, with leading dot).
 _SUPPORTED_EXTENSIONS = {".xlsx", ".csv", ".parquet"}
 
+# Cell-count thresholds for the default size guard.
+_WARN_CELLS = 500_000
+_ABORT_CELLS = 5_000_000
+
 
 def _build_parser() -> argparse.ArgumentParser:
     """Construct the argument parser."""
@@ -36,7 +40,7 @@ def _build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "input_file",
         nargs="?",
-        help="Path to the .xlsx or .csv file to analyse.",
+        help="Path to the .xlsx, .csv, or .parquet file to analyse.",
     )
     parser.add_argument(
         "--output-dir",
@@ -246,8 +250,6 @@ def main(argv: list[str] | None = None) -> None:
         )
         sys.exit(1)
     if max_rows is None:
-        _WARN_CELLS = 500_000
-        _ABORT_CELLS = 5_000_000
         if cells > _ABORT_CELLS:
             print(
                 f"Error: {rows:,} rows x {cols:,} columns = {cells:,} cells "

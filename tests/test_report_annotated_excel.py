@@ -10,7 +10,7 @@ from openpyxl import load_workbook
 from datascope.findings.composer import compose_finding
 from datascope.findings.pipeline import process_findings
 from datascope.findings.severity import classify_severity
-from datascope.models import Finding, FindingType, Severity
+from datascope.models import Finding, FindingType
 from datascope.reports.annotated_excel import write_annotated_excel
 
 # ---------------------------------------------------------------------------

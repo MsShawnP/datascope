@@ -220,3 +220,23 @@ Goal: Deepen the technical moat and expand the addressable audience.
 - Generate `requirements.lock` via `pip-compile` or `uv pip compile`
 - Add `pip audit` step to CI workflow
 - Done when: `pip install -r requirements.lock` produces identical installs; CI fails on known-vulnerable dependencies
+
+---
+
+## Improvement History
+
+### 2026-05-22 — Improvement pass
+- **Trigger:** Scheduled review (first `/improve` pass)
+- **What was reviewed:** Full codebase audit — code quality, tests, dependencies, workflow files, security, git hygiene, linter, pip-audit
+- **What was fixed:**
+  1. Ruff lint errors (3): unsorted imports in pdf.py, unused Severity imports in 2 test files
+  2. pip upgraded to 26.1.1 (2 CVEs fixed)
+  3. CLAUDE.md fleshed out with project description, stack, architecture, key conventions
+  4. Removed dead `defusedxml` dependency (listed but never imported)
+  5. Moved `_WARN_CELLS`/`_ABORT_CELLS` to module-level constants in cli.py
+  6. Fixed `input_file` help text to mention .parquet
+  7. Extracted shared `health_assessment_text()` to `_palette.py` — PDF and HTML now use identical health assessment logic
+  8. Removed dead `if header in field_to_severity: pass` in annotated_excel.py
+  9. Extracted shared `DATE_LIKE_RE` regex — csv_loader now imports from format_check.py instead of maintaining a duplicate
+- **Deferred:** None
+- **Next review:** 2026-06-22

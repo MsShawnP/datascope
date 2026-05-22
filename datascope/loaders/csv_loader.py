@@ -12,12 +12,12 @@ the Excel loader.
 from __future__ import annotations
 
 import csv
-import re
 from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
 
+from datascope.analyzers.format_check import DATE_LIKE_RE
 from datascope.models import LoaderResult
 
 # Canonical boolean strings (case-insensitive).
@@ -33,13 +33,6 @@ _DATETIME_FMTS = (
     "%m/%d/%Y",
     "%d/%m/%Y",
     "%Y/%m/%d",
-)
-
-_DATE_LIKE_RE = re.compile(
-    r"^\d{1,4}[\-/\.]\d{1,2}[\-/\.]\d{1,4}"
-    r"(?:[T ]\d{1,2}:\d{2}(?::\d{2})?)?$"
-    r"|^\w+ \d{1,2},? \d{2,4}$"
-    r"|^\d{1,2} \w+ \d{2,4}$"
 )
 
 
@@ -83,7 +76,7 @@ def _infer_cell(raw: str) -> object:
         return False
 
     # --- datetime -----------------------------------------------------
-    if _DATE_LIKE_RE.match(stripped):
+    if DATE_LIKE_RE.match(stripped):
         for fmt in _DATETIME_FMTS:
             try:
                 return datetime.strptime(stripped, fmt)

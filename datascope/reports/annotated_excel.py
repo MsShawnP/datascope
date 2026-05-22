@@ -73,8 +73,6 @@ def write_annotated_excel(
         cell = ws_data.cell(row=1, column=col_idx, value=header)
         cell.fill = _HEADER_FILL
         cell.font = _HEADER_FONT
-        if header in field_to_severity:
-            pass
 
     for row_idx, row_data in enumerate(source_data, start=2):
         for col_idx, value in enumerate(row_data, start=1):

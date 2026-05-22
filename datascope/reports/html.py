@@ -21,6 +21,7 @@ from datascope.reports._palette import (
     SEVERITY_COLORS,
     SEVERITY_LABELS,
     SEVERITY_ORDER,
+    health_assessment_text,
 )
 
 _FONTS_DIR = Path(__file__).parent / "fonts"
@@ -61,29 +62,7 @@ def _health_assessment(findings: list[Finding]) -> str:
     for finding in findings:
         if finding.severity is not None:
             counts[finding.severity] += 1
-
-    crit = counts[Severity.CRITICAL]
-    warn = counts[Severity.WARNING]
-    info = counts[Severity.INFO]
-
-    if crit > 0:
-        return (
-            f"This dataset has {crit} critical finding{'s' if crit != 1 else ''} "
-            f"that will cause silent data loss or incorrect calculations if not addressed. "
-            f"These should be fixed before using this data for any downstream purpose."
-        )
-    if warn > 0:
-        return (
-            f"No critical issues were found, but {warn} warning{'s' if warn != 1 else ''} "
-            f"indicate{'s' if warn == 1 else ''} potential problems that could cause "
-            f"misinterpretation or key mismatches."
-        )
-    if info > 0:
-        return (
-            f"{info} informational observation{'s were' if info != 1 else ' was'} "
-            f"found. The dataset is in good shape overall."
-        )
-    return "No issues detected. The dataset looks clean."
+    return health_assessment_text(counts)
 
 
 def _render_finding_card(finding: Finding) -> str:

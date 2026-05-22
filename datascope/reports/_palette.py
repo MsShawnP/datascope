@@ -58,3 +58,48 @@ FINDING_TYPE_LABELS: dict[FindingType, str] = {
     FindingType.DUPLICATE_IDS: "Suspected Duplicate IDs",
     FindingType.MISSING_VALUE_PATTERN: "Missing Values",
 }
+
+
+# ---------------------------------------------------------------------------
+# Shared health assessment text
+# ---------------------------------------------------------------------------
+
+
+def health_assessment_text(counts: dict[Severity, int]) -> str:
+    """Return a plain-English health assessment from severity counts."""
+    total = sum(counts.values())
+    crit = counts.get(Severity.CRITICAL, 0)
+    warn = counts.get(Severity.WARNING, 0)
+    info = counts.get(Severity.INFO, 0)
+
+    if total == 0:
+        return (
+            "No data quality issues were detected. The dataset appears clean "
+            "and ready for analysis."
+        )
+    if crit == 0 and warn == 0:
+        return (
+            f"{info} informational observation{'s were' if info != 1 else ' was'} "
+            f"found. The dataset is in good shape overall, with "
+            f"{'a few' if info <= 3 else 'some'} minor items worth noting."
+        )
+    if crit == 0:
+        return (
+            f"No critical issues were found, but {warn} "
+            f"warning{'s' if warn != 1 else ''} and {info} informational "
+            f"observation{'s were' if info != 1 else ' was'} detected. "
+            f"Address the warnings before using this data in production."
+        )
+    if crit <= 2:
+        return (
+            f"This dataset has {crit} critical issue{'s' if crit != 1 else ''} "
+            f"that could cause silent data loss or incorrect calculations. "
+            f"These should be resolved before the data is used for reporting "
+            f"or analysis."
+        )
+    return (
+        f"This dataset has {crit} critical issues that require immediate "
+        f"attention. Data used in its current state is likely to produce "
+        f"incorrect results. A thorough review and cleanup is recommended "
+        f"before proceeding."
+    )

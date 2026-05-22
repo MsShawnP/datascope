@@ -43,14 +43,15 @@ from datascope.reports._palette import (
     HK_35_HEX,
     INFO_BG_HEX,
     INFO_TINT_HEX,
+    LONDON_5_HEX,
     LONDON_20_HEX,
     LONDON_35_HEX,
-    LONDON_5_HEX,
     LONDON_85_HEX,
     LONDON_95_HEX,
     SEVERITY_LABELS,
     WARNING_BG_HEX,
     WARNING_TINT_HEX,
+    health_assessment_text,
 )
 
 # ---------------------------------------------------------------------------
@@ -266,42 +267,7 @@ def _build_title_page(
 
 def _health_assessment(counts: dict[Severity, int]) -> str:
     """Return a plain-English health assessment based on severity counts."""
-    total = sum(counts.values())
-    crit = counts[Severity.CRITICAL]
-    warn = counts[Severity.WARNING]
-
-    if total == 0:
-        return (
-            "No data quality issues were detected. The dataset appears clean "
-            "and ready for analysis."
-        )
-    info = counts[Severity.INFO]
-    if crit == 0 and warn == 0:
-        return (
-            f"{info} informational observation{'s were' if info != 1 else ' was'} "
-            f"found. The dataset is in good shape overall, with "
-            f"{'a few' if info <= 3 else 'some'} minor items worth noting."
-        )
-    if crit == 0:
-        return (
-            f"No critical issues were found, but {warn} "
-            f"warning{'s' if warn != 1 else ''} and {info} informational "
-            f"observation{'s were' if info != 1 else ' was'} detected. "
-            f"Address the warnings before using this data in production."
-        )
-    if crit <= 2:
-        return (
-            f"This dataset has {crit} critical issue{'s' if crit != 1 else ''} "
-            f"that could cause silent data loss or incorrect calculations. "
-            f"These should be resolved before the data is used for reporting "
-            f"or analysis."
-        )
-    return (
-        f"This dataset has {crit} critical issues that require immediate "
-        f"attention. Data used in its current state is likely to produce "
-        f"incorrect results. A thorough review and cleanup is recommended "
-        f"before proceeding."
-    )
+    return health_assessment_text(counts)
 
 
 def _build_executive_summary(

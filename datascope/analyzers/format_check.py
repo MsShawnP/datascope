@@ -136,8 +136,9 @@ _DATE_FORMATS: list[str] = [
 
 # Quick pre-filter: a date-like string has at least one digit and a
 # separator or is in month-name form.
-_DATE_LIKE_RE = re.compile(
-    r"^\d{1,4}[\-/\.]\d{1,2}[\-/\.]\d{1,4}$"
+DATE_LIKE_RE = re.compile(
+    r"^\d{1,4}[\-/\.]\d{1,2}[\-/\.]\d{1,4}"
+    r"(?:[T ]\d{1,2}:\d{2}(?::\d{2})?)?$"
     r"|^\w+ \d{1,2},? \d{2,4}$"
     r"|^\d{1,2} \w+ \d{2,4}$"
 )
@@ -195,7 +196,7 @@ def analyze_mixed_dates(result: LoaderResult) -> list[Finding]:
                 continue
 
             # Quick pre-filter before expensive strptime calls
-            if not _DATE_LIKE_RE.match(val_str):
+            if not DATE_LIKE_RE.match(val_str):
                 continue
 
             fmt = _try_parse_date(val_str)

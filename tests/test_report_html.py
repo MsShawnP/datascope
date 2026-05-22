@@ -9,7 +9,7 @@ import pytest
 from datascope.findings.composer import compose_finding
 from datascope.findings.pipeline import process_findings
 from datascope.findings.severity import classify_severity
-from datascope.models import Finding, FindingType, Severity
+from datascope.models import Finding, FindingType
 from datascope.reports.html import _e, _health_assessment, write_html
 
 # ---------------------------------------------------------------------------
@@ -106,12 +106,12 @@ class TestHealthAssessment:
     def test_critical_findings(self):
         findings = [_critical_finding(), _critical_finding("cost")]
         result = _health_assessment(findings)
-        assert "2 critical findings" in result
+        assert "2 critical issues" in result
         assert "silent data loss" in result
 
     def test_single_critical(self):
         result = _health_assessment([_critical_finding()])
-        assert "1 critical finding" in result
+        assert "1 critical issue" in result
 
     def test_warnings_only(self):
         result = _health_assessment([_warning_finding()])
@@ -129,7 +129,7 @@ class TestHealthAssessment:
 
     def test_no_findings(self):
         result = _health_assessment([])
-        assert "No issues detected" in result
+        assert "No data quality issues were detected" in result
 
     def test_critical_takes_precedence(self):
         findings = [_critical_finding(), _warning_finding(), _info_finding()]
@@ -234,7 +234,7 @@ class TestZeroFindings:
 
     def test_health_says_clean(self, html_path: Path):
         content = html_path.read_text(encoding="utf-8")
-        assert "No issues detected" in content
+        assert "No data quality issues were detected" in content
 
     def test_zero_counts(self, html_path: Path):
         content = html_path.read_text(encoding="utf-8")
