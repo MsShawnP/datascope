@@ -5,6 +5,8 @@
 [![Python 3.10+](https://img.shields.io/pypi/pyversions/datascope-dq)](https://pypi.org/project/datascope-dq/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
+**PyPI:** `pip install datascope-dq`
+
 Data created upstream — by manufacturing teams entering UPCs, inventory staff assigning product codes, offshore developers choosing column types — silently breaks systems downstream. A product code with letters where EDI expects numbers. Fifteen "N/A" strings buried in 500 numeric rows that pandas silently drops, skewing every calculation by 3%.
 
 datascope finds these problems, explains what's wrong in plain English, and tells you what to fix. It reads each cell's actual type (not what pandas infers), detects hidden quality issues, classifies their severity by downstream impact, and generates a professional diagnostic report.
