@@ -2,6 +2,11 @@
 
 All notable changes to datascope are documented here.
 
+## [2.2.1] — 2026-06-10
+
+### Fixed
+- README image and file links converted to absolute URLs for correct PyPI rendering
+
 ## [2.2.0] — 2026-05-15
 
 ### Added

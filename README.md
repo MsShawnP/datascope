@@ -3,7 +3,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/datascope-dq)](https://pypi.org/project/datascope-dq/)
 [![CI](https://github.com/MsShawnP/datascope/actions/workflows/ci.yml/badge.svg)](https://github.com/MsShawnP/datascope/actions/workflows/ci.yml)
 [![Python 3.10+](https://img.shields.io/pypi/pyversions/datascope-dq)](https://pypi.org/project/datascope-dq/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/MsShawnP/datascope/blob/main/LICENSE)
 
 **PyPI:** `pip install datascope-dq`
 
