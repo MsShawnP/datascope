@@ -3,7 +3,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/datascope-dq)](https://pypi.org/project/datascope-dq/)
 [![CI](https://github.com/MsShawnP/datascope/actions/workflows/ci.yml/badge.svg)](https://github.com/MsShawnP/datascope/actions/workflows/ci.yml)
 [![Python 3.10+](https://img.shields.io/pypi/pyversions/datascope-dq)](https://pypi.org/project/datascope-dq/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://github.com/MsShawnP/datascope/blob/main/LICENSE)
 
 Data created upstream — by manufacturing teams entering UPCs, inventory staff assigning product codes, offshore developers choosing column types — silently breaks systems downstream. A product code with letters where EDI expects numbers. Fifteen "N/A" strings buried in 500 numeric rows that pandas silently drops, skewing every calculation by 3%.
 
