@@ -22,3 +22,5 @@ Data quality diagnostics for tabular datasets. Surfaces hidden problems (mixed t
 Read `../lailara-design-system/LAILARA_DESIGN_SYSTEM.md` before any visual work — colors, typography, layout, components, charts, voice, interactions. It is the single source of truth.
 
 ---
+
+Never write secrets, tokens, or passwords into tracked files, READMEs, or commit messages — use environment variables and secret stores only.

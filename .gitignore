@@ -39,3 +39,11 @@ Thumbs.db
 # Test artifacts
 mixed_type_test.xlsx
 sample_data.xlsx
+
+# Security - secret leak prevention
+.env
+.env.*
+*.pem
+*.key
+credentials.*
+secrets.*
