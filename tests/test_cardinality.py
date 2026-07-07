@@ -101,8 +101,9 @@ class TestNearConstant:
 
     @pytest.fixture()
     def result(self) -> LoaderResult:
-        # 3 unique values out of 500 rows => uniqueness_ratio = 0.006
-        values = ["A"] * 400 + ["B"] * 80 + ["C"] * 20
+        # 3 unique values out of 500 rows => uniqueness_ratio = 0.006,
+        # with "A" dominating 490/500 = 98% => genuinely near-constant
+        values = ["A"] * 490 + ["B"] * 8 + ["C"] * 2
         return _make_loader_result("status", values)
 
     def test_produces_one_finding(self, result):
@@ -136,7 +137,7 @@ class TestNearConstant:
         assert len(top) <= 5
         # Most common value should be "A" with count 400
         assert top[0]["value"] == "A"
-        assert top[0]["count"] == 400
+        assert top[0]["count"] == 490
 
 
 # ---------------------------------------------------------------------------

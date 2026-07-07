@@ -2,6 +2,12 @@
 
 All notable changes to datascope are documented here.
 
+## [2.3.0] — 2026-07-07
+
+### Fixed
+- **Near-constant detection** now fires on *mode dominance* — when a single value covers ≥95% of non-null rows — instead of low overall uniqueness. This stops legitimate low-cardinality categoricals (e.g. `order_status`, `is_renewal`) from being wrongly flagged. Evidence gains a `dominant_pct` field.
+- **Suspected-duplicate-ID detection** now only fires on identifier-like columns: those whose name tokenizes (splitting on non-alphanumerics and camelCase) to an ID word, or whose values are all integer-like. Continuous decimal measures like `revenue` and free-text columns are no longer flagged as ID columns with duplicates.
+
 ## [2.2.1] — 2026-06-10
 
 ### Fixed
