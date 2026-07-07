@@ -199,7 +199,6 @@ datascope/
 - pandas >= 2.0
 - openpyxl >= 3.1
 - reportlab >= 4.0
-- defusedxml >= 0.7
 - pyarrow >= 12.0 *(optional, for Parquet support)*
 
 ---
