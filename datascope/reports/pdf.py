@@ -35,6 +35,7 @@ from reportlab.platypus import (
 )
 
 from datascope.models import Finding, Severity
+from .brand_fonts import register_fonts, SERIF, SERIF_BOLD, SANS, SANS_BOLD
 from datascope.reports._palette import (
     CHICAGO_20_HEX,
     CRITICAL_BG_HEX,
@@ -105,70 +106,75 @@ def _build_styles() -> dict[str, ParagraphStyle]:
     return {
         "title": ParagraphStyle(
             "ds_title", parent=base["Title"],
-            fontName="Times-Bold",
+            fontName=SERIF_BOLD,
             fontSize=24, textColor=LONDON_5, spaceAfter=6,
             alignment=TA_CENTER,
         ),
         "subtitle": ParagraphStyle(
             "ds_subtitle", parent=base["Normal"],
+            fontName=SANS,
             fontSize=12, textColor=LONDON_35, spaceAfter=4,
             alignment=TA_CENTER,
         ),
         "h1": ParagraphStyle(
             "ds_h1", parent=base["Heading1"],
-            fontName="Times-Bold",
+            fontName=SERIF_BOLD,
             fontSize=16, textColor=LONDON_5, spaceAfter=6,
         ),
         "h2": ParagraphStyle(
             "ds_h2", parent=base["Heading2"],
-            fontName="Times-Bold",
+            fontName=SERIF_BOLD,
             fontSize=13, textColor=LONDON_5, spaceAfter=4,
         ),
         "h3": ParagraphStyle(
             "ds_h3", parent=base["Heading3"],
-            fontName="Times-Bold",
+            fontName=SERIF_BOLD,
             fontSize=11, textColor=LONDON_5, spaceAfter=2,
         ),
         "body": ParagraphStyle(
             "ds_body", parent=base["Normal"],
+            fontName=SANS,
             fontSize=9, textColor=LONDON_20, spaceAfter=4, leading=13,
         ),
         "body_bold": ParagraphStyle(
             "ds_body_bold", parent=base["Normal"],
             fontSize=9, textColor=LONDON_20, spaceAfter=4, leading=13,
-            fontName="Helvetica-Bold",
+            fontName=SANS_BOLD,
         ),
         "caption": ParagraphStyle(
             "ds_caption", parent=base["Normal"],
+            fontName=SANS,
             fontSize=8, textColor=LONDON_35, spaceAfter=6,
         ),
         "badge": ParagraphStyle(
             "ds_badge", parent=base["Normal"],
             fontSize=9, textColor=WHITE, alignment=TA_CENTER,
-            fontName="Helvetica-Bold",
+            fontName=SANS_BOLD,
         ),
         "summary_number": ParagraphStyle(
             "ds_summary_number", parent=base["Normal"],
-            fontName="Times-Bold",
+            fontName=SERIF_BOLD,
             fontSize=28, alignment=TA_CENTER,
             leading=34, spaceAfter=0,
         ),
         "summary_label": ParagraphStyle(
             "ds_summary_label", parent=base["Normal"],
             fontSize=10, alignment=TA_CENTER,
-            fontName="Helvetica-Bold", spaceAfter=0,
+            fontName=SANS_BOLD, spaceAfter=0,
         ),
         "card_label": ParagraphStyle(
             "ds_card_label", parent=base["Normal"],
             fontSize=8, textColor=LONDON_35, spaceAfter=1,
-            fontName="Helvetica-Bold",
+            fontName=SANS_BOLD,
         ),
         "card_text": ParagraphStyle(
             "ds_card_text", parent=base["Normal"],
+            fontName=SANS,
             fontSize=9, textColor=LONDON_20, spaceAfter=4, leading=12,
         ),
         "no_issues": ParagraphStyle(
             "ds_no_issues", parent=base["Normal"],
+            fontName=SANS,
             fontSize=12, textColor=HK_35,
             alignment=TA_CENTER, spaceAfter=10,
         ),
@@ -202,7 +208,7 @@ def _build_title_page(
     # Product branding
     brand_style = ParagraphStyle(
         "ds_brand", parent=styles["subtitle"],
-        fontSize=11, textColor=CHICAGO_20, fontName="Helvetica-Bold",
+        fontSize=11, textColor=CHICAGO_20, fontName=SANS_BOLD,
         spaceAfter=2,
     )
     story.append(Paragraph("datascope", brand_style))
@@ -239,6 +245,7 @@ def _build_title_page(
         rowHeights=[0.5 * inch, 0.25 * inch],
     )
     summary_tbl.setStyle(TableStyle([
+        ("FONTNAME", (0, 0), (-1, -1), SANS),
         ("ALIGN", (0, 0), (-1, -1), "CENTER"),
         ("VALIGN", (0, 0), (-1, 0), "BOTTOM"),
         ("VALIGN", (0, 1), (-1, 1), "TOP"),
@@ -350,6 +357,7 @@ def _build_finding_card(
         colWidths=[0.9 * inch, CONTENT_W - 2.5 * inch, 1.6 * inch],
     )
     header_tbl.setStyle(TableStyle([
+        ("FONTNAME", (0, 0), (-1, -1), SANS),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
         ("BACKGROUND", (0, 0), (-1, -1), tint),
         ("TOPPADDING", (0, 0), (-1, -1), 6),
@@ -378,6 +386,7 @@ def _build_finding_card(
         colWidths=[1.3 * inch, CONTENT_W - 1.3 * inch],
     )
     body_tbl.setStyle(TableStyle([
+        ("FONTNAME", (0, 0), (-1, -1), SANS),
         ("VALIGN", (0, 0), (-1, -1), "TOP"),
         ("TOPPADDING", (0, 0), (-1, -1), 3),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 3),
@@ -393,6 +402,7 @@ def _build_finding_card(
     ]
     card_tbl = Table(card_data, colWidths=[CONTENT_W])
     card_tbl.setStyle(TableStyle([
+        ("FONTNAME", (0, 0), (-1, -1), SANS),
         ("BOX", (0, 0), (-1, -1), 1, GRID_COLOR),
         ("TOPPADDING", (0, 0), (-1, -1), 0),
         ("BOTTOMPADDING", (0, 0), (-1, -1), 0),
@@ -510,9 +520,9 @@ def _build_field_inventory(
     style_cmds = [
         ("BACKGROUND", (0, 0), (-1, 0), CHICAGO_20),
         ("TEXTCOLOR", (0, 0), (-1, 0), WHITE),
-        ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+        ("FONTNAME", (0, 0), (-1, 0), SANS_BOLD),
         ("FONTSIZE", (0, 0), (-1, -1), 8),
-        ("FONTNAME", (0, 1), (-1, -1), "Helvetica"),
+        ("FONTNAME", (0, 1), (-1, -1), SANS),
         ("ALIGN", (0, 0), (-1, 0), "CENTER"),
         ("ALIGN", (0, 1), (0, -1), "LEFT"),
         ("ALIGN", (1, 1), (1, -1), "LEFT"),
@@ -536,7 +546,7 @@ def _build_field_inventory(
                     ("TEXTCOLOR", (2, row_idx), (2, row_idx), _SEVERITY_COLORS[sev])
                 )
                 style_cmds.append(
-                    ("FONTNAME", (2, row_idx), (2, row_idx), "Helvetica-Bold")
+                    ("FONTNAME", (2, row_idx), (2, row_idx), SANS_BOLD)
                 )
                 break
 
@@ -572,6 +582,8 @@ def write_pdf(
     Path
         The resolved path to the created PDF file.
     """
+    register_fonts()
+
     output = Path(output_path)
     output.parent.mkdir(parents=True, exist_ok=True)
 
@@ -590,7 +602,7 @@ def write_pdf(
 
     def _on_later_pages(canvas, doc):
         canvas.saveState()
-        canvas.setFont("Helvetica", 8)
+        canvas.setFont(SANS, 8)
         canvas.setFillColor(LONDON_35)
         canvas.drawString(
             0.5 * inch, letter[1] - 0.4 * inch,

@@ -5,3 +5,8 @@
 *.pdf  binary
 *.xlsx binary
 *.xls  binary
+
+# Fonts are binary
+*.ttf binary
+*.woff binary
+*.woff2 binary
