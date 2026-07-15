@@ -35,7 +35,6 @@ from reportlab.platypus import (
 )
 
 from datascope.models import Finding, Severity
-from .brand_fonts import register_fonts, SERIF, SERIF_BOLD, SANS, SANS_BOLD
 from datascope.reports._palette import (
     CHICAGO_20_HEX,
     CRITICAL_BG_HEX,
@@ -54,6 +53,8 @@ from datascope.reports._palette import (
     WARNING_TINT_HEX,
     health_assessment_text,
 )
+
+from .brand_fonts import SANS, SANS_BOLD, SERIF_BOLD, register_fonts
 
 # ---------------------------------------------------------------------------
 # reportlab color objects derived from the shared palette
