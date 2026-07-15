@@ -2,6 +2,14 @@
 
 All notable changes to datascope are documented here.
 
+## [2.3.1] — 2026-07-15
+
+### Added
+- PDF reports embed the Lailara brand typefaces — Playfair Display (serif) and Source Sans 3 (sans) — instead of falling back to base-14 Helvetica/Times.
+
+### Fixed
+- Brand-font TTFs and their OFL licenses are now packaged into the wheel and sdist (`tool.setuptools.package-data`). Previously only `brand_fonts/__init__.py` shipped, so a pip-installed copy could not embed the fonts and fell back to Helvetica; embedding worked only from a source checkout.
+
 ## [2.3.0] — 2026-07-07
 
 ### Fixed
