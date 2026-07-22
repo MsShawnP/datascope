@@ -1,0 +1,7 @@
+[extend]
+useDefault = true
+
+[[rules]]
+id = "postgres-url-with-password"
+description = "Populated Postgres connection string"
+regex = '''postgres(?:ql)?://[^:@/\s]+:[^@/\s]+@'''
