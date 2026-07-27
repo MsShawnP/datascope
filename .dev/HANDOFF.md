@@ -1,5 +1,17 @@
 # Handoff
 
+## 2026-07-27 21:15
+
+**Started from:** v2.3.1 on PyPI, clean tree. Due for a second `/improve`. Request: improve + code review + UI review.
+
+**Did:** Improve audit + correctness/maintainability reviewer agents + automated UI review (new `review.yaml`). Fixed 8 findings total — 4 real data-integrity bugs (duplicate-ID rounding false-negative, duplicate-header analyzer crash, null-position-by-index-label crash on datetime index, CSV inf/nan/underscore coercion) + 4 tidiness items. Released **v2.3.2** to PyPI. Bumped GitHub Actions to Node 24 (checkout@v5, setup-python@v6). Fixed a pre-existing red CI (setuptools PYSEC-2026-3447 in pip-audit).
+
+**State:** v2.3.2 live on PyPI. `main` green and pushed, working tree clean. 364 tests pass (up from 353), ruff clean. Next `/improve` due 2026-08-24.
+
+**Next:** Greenfield — no planned work. Options: feature work from user feedback, or consider gating `publish.yml` on CI so releases can't ship on red.
+
+---
+
 ## Session — 2026-05-22 (First /improve pass + dep audit)
 
 **Started from:** All 25 plan tasks complete, v2.2.0 on PyPI, 353 tests green. Due for first `/improve` and dep audit.

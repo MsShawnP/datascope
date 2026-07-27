@@ -30,6 +30,12 @@ Modern setuptools (isolated build env) rejects the `License :: OSI Approved :: M
 - **Scope:** datascope dependency management
 - **Do not:** Re-add defusedxml unless datascope starts parsing user-supplied XML outside of openpyxl (e.g., raw lxml usage).
 
+## 2026-07-27: UI review targets the generated HTML reports served locally
+
+- **Why:** datascope has no live web app — its "UI" is the self-contained HTML diagnostic report. The ui-review tool runs against `samples/output/*.html` served with `python -m http.server`, configured by `review.yaml`. `design_system: true` is enabled even though this isn't a `lailarallc.com` deploy, because the reports are built to the Lailara Design System and the brand-token checks are exactly what matters.
+- **Scope:** How `/ui-review` is run for datascope (and similar report-generating tools).
+- **Do not:** Treat a UI-review "heading typeface" warning as real without checking — it measures the container element, not the `h1` (the `h1` correctly uses Playfair). Do not commit the `screenshots/` the tool regenerates (gitignored); do keep `review.yaml`.
+
 ## 2026-05-16: Stay in the file-audit niche; do not compete with pipeline tools
 
 - **Why:** GX owns rules, Pandera owns schemas, Soda owns databases, ydata owns stats. datascope's moat is cell-level detection + professional narrative reports for non-technical readers. Competing on their turf dilutes the positioning.
