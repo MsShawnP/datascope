@@ -11,6 +11,7 @@ from pathlib import Path
 
 import pandas as pd
 
+from datascope.loaders.base import dedupe_headers
 from datascope.models import LoaderResult
 
 
@@ -78,10 +79,10 @@ def load_excel(path: Path, sheet: str | int = 0) -> LoaderResult:
         )
 
     # --- headers --------------------------------------------------------
-    headers = [
+    headers = dedupe_headers([
         str(h) if h is not None else f"col_{i}"
         for i, h in enumerate(rows[0])
-    ]
+    ])
 
     # --- data rows (pad jagged rows to header width) ---------------------
     n_cols = len(headers)

@@ -18,6 +18,7 @@ from pathlib import Path
 import pandas as pd
 
 from datascope.analyzers.format_check import DATE_LIKE_RE
+from datascope.loaders.base import dedupe_headers
 from datascope.models import LoaderResult
 
 # Canonical boolean strings (case-insensitive).
@@ -129,10 +130,10 @@ def load_csv(path: Path) -> LoaderResult:
                     },
                 )
 
-            headers = [
+            headers = dedupe_headers([
                 h.strip() if h.strip() else f"col_{i}"
                 for i, h in enumerate(first_row)
-            ]
+            ])
             n_cols = len(headers)
 
             # Single-pass: infer types and build column-major type lists

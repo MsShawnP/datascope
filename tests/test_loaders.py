@@ -249,6 +249,40 @@ class TestLoadCsv:
         assert result.dataframe.at[0, "c"] is None
         assert result.dataframe.at[1, "c"] is None
 
+    def test_duplicate_headers_disambiguated(self, tmp_path):
+        """Repeated headers get numeric suffixes so DataFrame columns and
+        cell_types keys stay 1:1 (otherwise per-column analyzers crash)."""
+        csv_path = _write_csv(tmp_path, """\
+            amount,region,amount
+            100,west,10
+            200,east,20
+        """)
+        result = load_csv(csv_path)
+        assert list(result.dataframe.columns) == ["amount", "region", "amount.1"]
+        # The load contract: cell_types keys align 1:1 with DataFrame columns.
+        assert list(result.cell_types.keys()) == list(result.dataframe.columns)
+
+
+# ===================================================================
+# dedupe_headers helper
+# ===================================================================
+
+class TestDedupeHeaders:
+
+    def test_no_duplicates_unchanged(self):
+        from datascope.loaders.base import dedupe_headers
+        assert dedupe_headers(["a", "b", "c"]) == ["a", "b", "c"]
+
+    def test_duplicates_suffixed(self):
+        from datascope.loaders.base import dedupe_headers
+        assert dedupe_headers(["a", "a", "a"]) == ["a", "a.1", "a.2"]
+
+    def test_suffix_collision_skipped(self):
+        """A generated suffix must not collide with a real existing header."""
+        from datascope.loaders.base import dedupe_headers
+        # "a.1" already exists, so the second "a" must skip past it.
+        assert dedupe_headers(["a", "a.1", "a"]) == ["a", "a.1", "a.2"]
+
 
 # ===================================================================
 # Error paths
