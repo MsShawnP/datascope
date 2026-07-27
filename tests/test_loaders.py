@@ -264,6 +264,49 @@ class TestLoadCsv:
 
 
 # ===================================================================
+# Cell inference: reject Python-only numeric spellings
+# ===================================================================
+
+class TestNumericSpellingGuards:
+    """int()/float() accept forms that aren't real data numbers. A cell
+    literally spelling one of these must stay a string so the type and
+    sentinel analyzers can see it."""
+
+    def test_non_finite_floats_stay_strings(self, tmp_path):
+        csv_path = _write_csv(tmp_path, """\
+            label,amount
+            a,inf
+            b,-inf
+            c,nan
+            d,infinity
+        """)
+        result = load_csv(csv_path)
+        # Every value in the amount column is text, not a float.
+        assert set(result.cell_types["amount"]) == {str}
+        assert result.dataframe["amount"].tolist() == ["inf", "-inf", "nan", "infinity"]
+
+    def test_underscore_grouped_number_stays_string(self, tmp_path):
+        csv_path = _write_csv(tmp_path, """\
+            label,amount
+            a,1_000
+        """)
+        result = load_csv(csv_path)
+        assert result.cell_types["amount"] == [str]
+        assert result.dataframe.at[0, "amount"] == "1_000"
+
+    def test_real_numbers_still_parse(self, tmp_path):
+        csv_path = _write_csv(tmp_path, """\
+            label,amount
+            a,42
+            b,3.14
+            c,-5
+            d,1e3
+        """)
+        result = load_csv(csv_path)
+        assert result.dataframe["amount"].tolist() == [42, 3.14, -5, 1000.0]
+
+
+# ===================================================================
 # dedupe_headers helper
 # ===================================================================
 

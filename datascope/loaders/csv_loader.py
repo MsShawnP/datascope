@@ -25,6 +25,11 @@ from datascope.models import LoaderResult
 _BOOL_TRUE = frozenset({"true", "yes"})
 _BOOL_FALSE = frozenset({"false", "no"})
 
+# Non-finite float spellings that ``float()`` accepts. A cell literally
+# spelling one of these is real data (often a sentinel), not a number, so
+# it must stay a string rather than becoming ``inf``/``NaN``.
+_NON_FINITE_STRS = frozenset({"inf", "infinity", "nan"})
+
 # Date/time formats tried in order (most specific first).
 _DATETIME_FMTS = (
     "%Y-%m-%dT%H:%M:%S",      # ISO 8601
@@ -57,17 +62,28 @@ def _infer_cell(raw: str) -> object:
     if len(stripped) > 1 and stripped[0] == "0" and stripped.isdigit():
         return stripped
 
-    # --- int ----------------------------------------------------------
-    try:
-        return int(stripped)
-    except ValueError:
-        pass
+    # int()/float() accept Python-specific spellings that are not real data
+    # numbers: underscore digit grouping ("1_000") and non-finite floats
+    # ("inf", "-inf", "infinity", "nan"). Coercing those would silently turn
+    # a genuine text/sentinel cell into a number -- and "nan" would even
+    # vanish as a null. Skip numeric parsing for them so they stay strings.
+    _numeric_candidate = (
+        "_" not in stripped
+        and stripped.lstrip("+-").lower() not in _NON_FINITE_STRS
+    )
 
-    # --- float --------------------------------------------------------
-    try:
-        return float(stripped)
-    except ValueError:
-        pass
+    if _numeric_candidate:
+        # --- int ------------------------------------------------------
+        try:
+            return int(stripped)
+        except ValueError:
+            pass
+
+        # --- float ----------------------------------------------------
+        try:
+            return float(stripped)
+        except ValueError:
+            pass
 
     # --- bool ---------------------------------------------------------
     lower = stripped.lower()
