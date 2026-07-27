@@ -154,6 +154,36 @@ class TestFullyUnique:
 
 
 # ---------------------------------------------------------------------------
+# Regression: large ID column whose uniqueness rounds to 1.0 but has a
+# genuine duplicate. Gating on the rounded ratio (< 1.0) silently missed
+# these; gating on the raw integer counts catches them.
+# ---------------------------------------------------------------------------
+
+class TestLargeColumnRoundingBoundary:
+    """20,000 rows with one duplicated ID: ratio 0.99995 rounds to 1.0."""
+
+    @pytest.fixture()
+    def result(self) -> LoaderResult:
+        # 19,999 distinct values + one repeat of the first => 20,000 rows
+        values = list(range(19999)) + [0]
+        return _make_loader_result("order_id", values)
+
+    def test_duplicate_is_flagged(self, result):
+        findings = analyze_cardinality(result)
+        assert len(findings) == 1
+        assert findings[0].finding_type is FindingType.DUPLICATE_IDS
+
+    def test_evidence_counts(self, result):
+        finding = analyze_cardinality(result)[0]
+        assert finding.evidence["total_count"] == 20000
+        assert finding.evidence["unique_count"] == 19999
+        # Rounded ratio still rounds to 1.0 for display -- the gate no longer
+        # depends on it.
+        assert finding.evidence["uniqueness_ratio"] == 1.0
+        assert "0" in finding.evidence["duplicate_values"]
+
+
+# ---------------------------------------------------------------------------
 # Edge case: 50% unique values -- no finding (neither threshold)
 # ---------------------------------------------------------------------------
 

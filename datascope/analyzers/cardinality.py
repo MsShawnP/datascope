@@ -151,7 +151,8 @@ def analyze_cardinality(result: LoaderResult) -> list[Finding]:
             ))
 
         elif (
-            _SUSPECTED_ID_MIN < uniqueness_ratio < 1.0
+            unique_count < total_count
+            and unique_count / total_count > _SUSPECTED_ID_MIN
             and _looks_like_identifier(col_name, filled)
         ):
             # Suspected duplicate IDs (only for identifier-like columns).
