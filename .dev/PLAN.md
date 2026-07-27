@@ -225,6 +225,33 @@ Goal: Deepen the technical moat and expand the addressable audience.
 
 ## Improvement History
 
+### 2026-07-27 — Improvement pass (+ code review + UI review)
+- **Trigger:** User-initiated (`/improve` + code review + UI review)
+- **What was reviewed:** Full source audit; parallel correctness + maintainability
+  reviewer agents; automated UI review of the generated HTML reports (new
+  `review.yaml`); baseline tests + ruff.
+- **What was fixed:**
+  1. **[Critical bug]** cardinality.py rounded `uniqueness_ratio` then gated on
+     `< 1.0`, so ID columns ≥ ~99.995% unique (e.g. 19,999/20,000) rounded to
+     1.0 and duplicate IDs were silently missed. Now gates on the integer test
+     `unique_count < total_count`. + regression test. (commit 1d82a68)
+  2. **[Bug]** Duplicate column headers collapsed `cell_types` while the
+     DataFrame kept both columns → per-column analyzers crashed and the CLI
+     swallowed it. Added shared `dedupe_headers()` in loaders/base.py, applied
+     in CSV + Excel loaders. + tests. (commit fa73f37)
+  3. Extracted `severity_counts()` to reports/_palette.py (was copy-pasted 4×).
+  4. cli.py now imports SEVERITY_ORDER/SEVERITY_LABELS instead of redefining.
+  5. Deleted dead datascope/analyzers/base.py (unused alias, stale docstring).
+  6. Added .parquet to loader docstring + exported load_parquet. (commit fc046ab)
+- **UI review:** 25 pass / 0 fail / 3 warnings — all warnings false positives
+  (heading-font measured the wrapper div; staleness N/A). Reports on-brand.
+- **Test count:** 353 → 359 (6 new). Ruff clean.
+- **Deferred:** Two low-confidence residual risks from the correctness pass —
+  parquet non-default index in missing-values distribution reporting; CSV cells
+  literally spelling `inf`/`nan` or underscore-grouped numbers coerced to
+  numeric. Neither confirmed as a real-world problem; noted for a future pass.
+- **Next review:** 2026-08-24 (active project)
+
 ### 2026-05-22 — Improvement pass
 - **Trigger:** Scheduled review (first `/improve` pass)
 - **What was reviewed:** Full codebase audit — code quality, tests, dependencies, workflow files, security, git hygiene, linter, pip-audit
