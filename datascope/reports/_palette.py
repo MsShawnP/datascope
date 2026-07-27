@@ -6,7 +6,9 @@ across all report generators (PDF, HTML, annotated Excel).
 
 from __future__ import annotations
 
-from datascope.models import FindingType, Severity
+from collections.abc import Iterable
+
+from datascope.models import Finding, FindingType, Severity
 
 # ---------------------------------------------------------------------------
 # Colour hex values — Lailara Design System v2 (city-named families)
@@ -58,6 +60,26 @@ FINDING_TYPE_LABELS: dict[FindingType, str] = {
     FindingType.DUPLICATE_IDS: "Suspected Duplicate IDs",
     FindingType.MISSING_VALUE_PATTERN: "Missing Values",
 }
+
+
+# ---------------------------------------------------------------------------
+# Shared severity tally
+# ---------------------------------------------------------------------------
+
+
+def severity_counts(findings: Iterable[Finding]) -> dict[Severity, int]:
+    """Count findings per severity level.
+
+    Every severity is present in the result (zero-filled). Findings whose
+    severity has not been classified yet (``None``) are ignored. Single
+    source of truth for the tally used by every report generator and the
+    CLI summary.
+    """
+    counts: dict[Severity, int] = {s: 0 for s in Severity}
+    for f in findings:
+        if f.severity is not None:
+            counts[f.severity] += 1
+    return counts
 
 
 # ---------------------------------------------------------------------------

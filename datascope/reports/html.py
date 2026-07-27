@@ -22,6 +22,7 @@ from datascope.reports._palette import (
     SEVERITY_LABELS,
     SEVERITY_ORDER,
     health_assessment_text,
+    severity_counts,
 )
 
 _FONTS_DIR = Path(__file__).parent / "fonts"
@@ -58,11 +59,7 @@ def _e(text: str | None) -> str:
 
 
 def _health_assessment(findings: list[Finding]) -> str:
-    counts: dict[Severity, int] = {s: 0 for s in Severity}
-    for finding in findings:
-        if finding.severity is not None:
-            counts[finding.severity] += 1
-    return health_assessment_text(counts)
+    return health_assessment_text(severity_counts(findings))
 
 
 def _render_finding_card(finding: Finding) -> str:
@@ -110,10 +107,7 @@ def write_html(
     cols = source_metadata.get("column_count", "?")
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
-    counts: dict[Severity, int] = {s: 0 for s in Severity}
-    for f in findings:
-        if f.severity is not None:
-            counts[f.severity] += 1
+    counts = severity_counts(findings)
     total = sum(counts.values())
 
     grouped: dict[Severity, list[Finding]] = defaultdict(list)

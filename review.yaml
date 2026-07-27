@@ -1,0 +1,59 @@
+project: datascope
+# The "UI" is the self-contained HTML diagnostic report. Reviewed by serving
+# samples/output/ locally: python -m http.server 8848 (run from samples/output).
+base_url: http://localhost:8848
+
+routes:
+  - path: /sample_mixed_types_diagnostic.html
+    name: Mixed-types report
+  - path: /sample_sales_diagnostic.html
+    name: Sales report
+
+forbidden_content:
+  - pattern: "TODO|FIXME|HACK|XXX"
+    severity: warning
+    reason: Dev markers leaked into a client-facing report
+  - pattern: "password\\s*=|api_key\\s*=|secret\\s*="
+    severity: fail
+    reason: Possible hardcoded credentials
+    exclude:
+      - "*.md"
+
+dom_checks:
+  - route: /sample_mixed_types_diagnostic.html
+    elements:
+      - selector: h1
+        label: Main heading present
+      - selector: .summary-row
+        label: Severity summary row present
+      - selector: .finding-card
+        label: At least one finding card rendered
+      - selector: .table-wrap
+        label: Field inventory table present
+      - selector: .footer
+        label: Footer present
+  - route: /sample_sales_diagnostic.html
+    elements:
+      - selector: h1
+        label: Main heading present
+      - selector: .summary-row
+        label: Severity summary row present
+      - selector: .finding-card
+        label: At least one finding card rendered
+      - selector: .footer
+        label: Footer present
+
+layout:
+  - route: /sample_mixed_types_diagnostic.html
+    checks:
+      - name: No horizontal scroll
+        assert: no_horizontal_scroll
+  - route: /sample_sales_diagnostic.html
+    checks:
+      - name: No horizontal scroll
+        assert: no_horizontal_scroll
+
+# Reports are built to the Lailara Design System (see .dev/CLAUDE.md), so audit
+# the rendered brand tokens even though this is served locally rather than on
+# a lailarallc.com domain.
+design_system: true

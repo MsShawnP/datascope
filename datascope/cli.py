@@ -103,6 +103,11 @@ def _parse_sheet(raw: str | None) -> str | int:
 def _format_summary(findings: list, source_metadata: dict, output_path: Path) -> str:
     """Build the human-readable stdout summary."""
     from datascope.models import Severity
+    from datascope.reports._palette import (
+        SEVERITY_LABELS,
+        SEVERITY_ORDER,
+        severity_counts,
+    )
 
     filename = source_metadata.get("filename", "unknown")
     rows = source_metadata.get("row_count", "?")
@@ -113,29 +118,19 @@ def _format_summary(findings: list, source_metadata: dict, output_path: Path) ->
     lines.append(f"  {rows} rows x {cols} columns")
     lines.append("")
 
-    # Count by severity.
-    counts: dict[Severity, int] = {s: 0 for s in Severity}
-    for f in findings:
-        if f.severity is not None:
-            counts[f.severity] += 1
+    counts = severity_counts(findings)
 
     total = sum(counts.values())
     lines.append(f"Found {total} finding{'s' if total != 1 else ''}:")
 
-    # Severity labels, ordered CRITICAL first.
-    severity_order = [Severity.CRITICAL, Severity.WARNING, Severity.INFO]
-    label_map = {
-        Severity.CRITICAL: "Critical",
-        Severity.WARNING: "Warning",
-        Severity.INFO: "Info",
-    }
+    max_count_width = max(
+        (len(str(counts[s])) for s in SEVERITY_ORDER), default=1
+    )
 
-    max_count_width = max((len(str(counts[s])) for s in severity_order), default=1)
-
-    for sev in severity_order:
+    for sev in SEVERITY_ORDER:
         c = counts[sev]
         if c > 0:
-            label = label_map[sev]
+            label = SEVERITY_LABELS[sev]
             bar = "#" * min(c * 4, 40)
             lines.append(f"  {c:>{max_count_width}} {label:<8} {bar}")
 

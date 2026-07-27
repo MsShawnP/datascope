@@ -52,6 +52,7 @@ from datascope.reports._palette import (
     WARNING_BG_HEX,
     WARNING_TINT_HEX,
     health_assessment_text,
+    severity_counts,
 )
 
 from .brand_fonts import SANS, SANS_BOLD, SERIF_BOLD, register_fonts
@@ -185,15 +186,6 @@ def _build_styles() -> dict[str, ParagraphStyle]:
 # ---------------------------------------------------------------------------
 # Section builders
 # ---------------------------------------------------------------------------
-
-def _severity_counts(findings: list[Finding]) -> dict[Severity, int]:
-    """Count findings per severity level."""
-    counts: dict[Severity, int] = {s: 0 for s in Severity}
-    for f in findings:
-        if f.severity is not None:
-            counts[f.severity] += 1
-    return counts
-
 
 def _build_title_page(
     story: list,
@@ -620,7 +612,7 @@ def write_pdf(
         canvas.restoreState()
 
     styles = _build_styles()
-    counts = _severity_counts(findings)
+    counts = severity_counts(findings)
     story: list = []
 
     _build_title_page(story, styles, source_metadata, counts)

@@ -47,3 +47,6 @@ sample_data.xlsx
 *.key
 credentials.*
 secrets.*
+
+# UI-review tool output (regenerated each run)
+screenshots/
