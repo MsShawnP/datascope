@@ -2,6 +2,14 @@
 
 All notable changes to datascope are documented here.
 
+## [2.3.2] — 2026-07-27
+
+### Fixed
+- **Suspected-duplicate-ID detection** no longer misses duplicates in large ID columns. The uniqueness ratio was rounded to 4 decimals before the `< 1.0` comparison, so a column ≥ ~99.995% unique (e.g. 19,999 distinct out of 20,000) rounded to exactly 1.0 and was silently passed as clean. The gate is now the exact integer test `unique_count < total_count`.
+- **Duplicate column headers** are now disambiguated at load time (`amount`, `amount.1`), matching pandas. Previously two columns sharing a header collapsed to one `cell_types` entry while the DataFrame kept both, causing per-column analyzers to crash on a same-named DataFrame — a crash the CLI silently swallowed, so the file was never fully analyzed.
+- **Missing-value positions** are now reported by 0-based row position rather than index label. A non-default index (which Parquet can restore, including a datetime index) previously produced wrong positions, and a non-integer index crashed the distribution report. Counts and percentages were always correct; only positional evidence was affected.
+- **CSV cell inference** now keeps `inf`, `-inf`, `infinity`, `nan`, and underscore-grouped tokens like `1_000` as strings. `int()`/`float()` accept these Python-specific spellings, so a genuine text or sentinel cell was silently coerced to a number — and `nan` even vanished as a null.
+
 ## [2.3.1] — 2026-07-15
 
 ### Added
