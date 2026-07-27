@@ -246,10 +246,15 @@ Goal: Deepen the technical moat and expand the addressable audience.
 - **UI review:** 25 pass / 0 fail / 3 warnings — all warnings false positives
   (heading-font measured the wrapper div; staleness N/A). Reports on-brand.
 - **Test count:** 353 → 359 (6 new). Ruff clean.
-- **Deferred:** Two low-confidence residual risks from the correctness pass —
-  parquet non-default index in missing-values distribution reporting; CSV cells
-  literally spelling `inf`/`nan` or underscore-grouped numbers coerced to
-  numeric. Neither confirmed as a real-world problem; noted for a future pass.
+- **Deferred:** None. The two residual risks from the correctness pass were
+  both confirmed and fixed the same day:
+  7. missing_values reported null positions by index *label*, not row
+     position — wrong on a non-default index and a crash on a datetime index
+     (parquet can restore either). Now resets to a 0-based RangeIndex. (0cbe393)
+  8. CSV inference coerced `inf`/`-inf`/`infinity`/`nan` and underscore-grouped
+     numbers (`1_000`) to numeric; now kept as strings so the type/sentinel
+     analyzers can flag them. (696a2f9)
+- **Test count (final):** 353 → 364 (11 new across the whole pass).
 - **Next review:** 2026-08-24 (active project)
 
 ### 2026-05-22 — Improvement pass
