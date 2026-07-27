@@ -53,8 +53,15 @@ def analyze_missing_values(
             continue
 
         non_null_count = total_rows - null_count
-        null_positions = _sample_null_positions(df[col])
-        distribution = _null_distribution(df[col], total_rows)
+        # Report row *positions*, not index labels. A loader can hand us a
+        # non-default index (parquet restores whatever index was persisted,
+        # including a datetime index), which would otherwise make the
+        # helpers report wrong positions -- or crash the distribution
+        # comparison when labels aren't integers. Resetting guarantees a
+        # 0-based RangeIndex.
+        col_by_position = df[col].reset_index(drop=True)
+        null_positions = _sample_null_positions(col_by_position)
+        distribution = _null_distribution(col_by_position, total_rows)
 
         evidence = {
             "null_count": null_count,
@@ -75,9 +82,13 @@ def analyze_missing_values(
 
 
 def _sample_null_positions(series: pd.Series, limit: int = 5) -> list[int]:
-    """Return up to *limit* 0-based row indices where the series is null."""
+    """Return up to *limit* 0-based row positions where the series is null.
+
+    Assumes *series* carries a 0-based ``RangeIndex`` (the caller resets the
+    index) so index labels equal row positions.
+    """
     nulls = series[series.isna()]
-    return list(nulls.index[:limit])
+    return [int(i) for i in nulls.index[:limit]]
 
 
 def _null_distribution(series: pd.Series, total_rows: int) -> str:

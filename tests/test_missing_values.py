@@ -17,6 +17,41 @@ def _make_result(data: dict, cell_types: dict | None = None) -> LoaderResult:
     )
 
 
+def _make_result_with_index(values: list, index) -> LoaderResult:
+    df = pd.DataFrame({"a": values}, index=index)
+    return LoaderResult(
+        dataframe=df,
+        cell_types={},
+        source_metadata={"filename": "test.parquet", "row_count": len(df)},
+    )
+
+
+class TestNonDefaultIndex:
+    """A loader (e.g. parquet) can hand us a non-default index. Null positions
+    and distribution must be reported as 0-based row positions regardless."""
+
+    def test_non_default_integer_index_reports_positions(self):
+        # Nulls at row positions 1 and 2; the index labels are 101, 102.
+        result = _make_result_with_index(
+            [1, None, None, 4, 5, 6, 7, 8, 9, 10],
+            index=pd.RangeIndex(100, 110),
+        )
+        ev = analyze_missing_values(result, threshold_pct=10.0)[0].evidence
+        assert ev["sample_null_positions"] == [1, 2]
+        assert ev["distribution"] == "concentrated at start"
+
+    def test_datetime_index_does_not_crash(self):
+        # A datetime index previously raised in _null_distribution
+        # ("'<' not supported between Timestamp and int").
+        result = _make_result_with_index(
+            [1, None, 3],
+            index=pd.to_datetime(["2020-01-01", "2020-01-02", "2020-01-03"]),
+        )
+        findings = analyze_missing_values(result, threshold_pct=1.0)
+        assert len(findings) == 1
+        assert findings[0].evidence["sample_null_positions"] == [1]
+
+
 class TestBasicDetection:
 
     def test_column_above_threshold_produces_finding(self):
