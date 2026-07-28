@@ -210,6 +210,11 @@ class TestHappyPathMixedFindings:
         content = html_path.read_text(encoding="utf-8")
         assert "#f5f3ee" in content
         assert "#1f2e7a" in content
+        assert "@font-face" in content, (
+            "No @font-face block: the woff2 files did not ship with the package. "
+            "Naming the family in the font stack is not evidence they loaded — "
+            "check [tool.setuptools.package-data] covers datascope.reports.fonts."
+        )
         assert "Playfair Display" in content
         assert "Source Sans 3" in content
 

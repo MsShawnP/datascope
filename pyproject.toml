@@ -52,6 +52,7 @@ include = ["datascope*"]
 
 [tool.setuptools.package-data]
 "datascope.reports.brand_fonts" = ["*.ttf", "*.txt"]
+"datascope.reports.fonts" = ["*.woff2"]
 
 [tool.ruff]
 line-length = 99
