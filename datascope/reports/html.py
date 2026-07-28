@@ -16,8 +16,10 @@ from typing import Any
 
 from datascope.models import Finding, Severity
 from datascope.reports._palette import (
+    CANVAS_HEX,
     CHICAGO_20_HEX,
     FINDING_TYPE_LABELS,
+    LONDON_95_HEX,
     SEVERITY_COLORS,
     SEVERITY_LABELS,
     SEVERITY_ORDER,
@@ -175,18 +177,18 @@ def write_html(
                         color: #0d0d0d; font-size: 28px; font-weight: 700; margin-bottom: 4px; }}
   .title-section .subtitle {{ color: #595959; font-size: 14px; }}
   .summary-row {{ display: flex; gap: 16px; margin: 24px 0; justify-content: center; }}
-  .summary-card {{ background: #ffffff; border: 1px solid #d9d9d9; border-radius: 2px;
+  .summary-card {{ background: {LONDON_95_HEX}; border: 1px solid #d9d9d9; border-radius: 2px;
                    padding: 20px 32px; text-align: center; }}
   .summary-number {{ font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
                      font-size: 32px; font-weight: 700; color: #0d0d0d; }}
   .summary-label {{ font-size: 13px; color: #595959; font-weight: 600; }}
-  .health {{ background: #ffffff; border: 1px solid #d9d9d9; border-radius: 2px;
+  .health {{ background: {LONDON_95_HEX}; border: 1px solid #d9d9d9; border-radius: 2px;
              padding: 16px 20px; margin: 16px 0 24px; }}
   .health p {{ font-size: 14px; color: #333333; }}
   h2 {{ font-family: 'Playfair Display', Georgia, 'Times New Roman', serif;
         color: #0d0d0d; font-size: 18px; font-weight: 700; margin: 28px 0 12px; }}
   hr {{ border: none; border-top: 1px solid #d9d9d9; margin: 0 0 12px; }}
-  .finding-card {{ background: #ffffff; border: 1px solid #d9d9d9; border-radius: 2px;
+  .finding-card {{ background: {LONDON_95_HEX}; border: 1px solid #d9d9d9; border-radius: 2px;
                    padding: 16px 20px; margin-bottom: 12px; }}
   .finding-header {{ display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }}
   .badge {{ color: white; font-size: 11px; font-weight: 600; padding: 2px 10px;
@@ -197,7 +199,10 @@ def write_html(
   .finding-type {{ font-size: 12px; color: #595959; }}
   .finding-body p {{ font-size: 13px; margin-bottom: 6px; color: #333333; }}
   .finding-body strong {{ color: #0d0d0d; }}
-  table {{ width: 100%; border-collapse: collapse; background: #ffffff;
+  /* DS interactive-table rows: canvas / London-95 alternating. The base is the
+     odd row, so it takes canvas — setting it to London-95 too would flatten the
+     zebra against the even-row rule below. */
+  table {{ width: 100%; border-collapse: collapse; background: {CANVAS_HEX};
            border: 1px solid #d9d9d9; border-radius: 2px; overflow: hidden; }}
   th {{ background: {CHICAGO_20_HEX}; color: white; padding: 10px 14px; text-align: left;
         font-size: 13px; font-weight: 600; }}
