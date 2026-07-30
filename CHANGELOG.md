@@ -2,6 +2,12 @@
 
 All notable changes to datascope are documented here.
 
+## [2.3.3] — 2026-07-30
+
+### Changed
+- **Report health assessment** now names the consequence: warning-level findings state that they typically skew joins and aggregations quietly, instead of a generic "address before production" line.
+- **Print styles tokenized** to the Lailara palette: report body ink is London-5 (`#0d0d0d`) and summary-card borders are London-85 (`#d9d9d9`) in print, replacing off-palette `#000`/`#ccc`.
+
 ## [2.3.2] — 2026-07-27
 
 ### Fixed
