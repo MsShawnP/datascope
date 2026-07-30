@@ -110,7 +110,8 @@ def health_assessment_text(counts: dict[Severity, int]) -> str:
             f"No critical issues were found, but {warn} "
             f"warning{'s' if warn != 1 else ''} and {info} informational "
             f"observation{'s were' if info != 1 else ' was'} detected. "
-            f"Address the warnings before using this data in production."
+            f"Warnings at this level typically skew joins and aggregations "
+            f"quietly — address them before this data feeds reporting."
         )
     if crit <= 2:
         return (

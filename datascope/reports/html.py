@@ -226,9 +226,9 @@ def write_html(
 
   /* ---- Print ---- */
   @media print {{
-    body {{ background: white; color: #000; font-size: 11pt; }}
+    body {{ background: white; color: #0d0d0d; font-size: 11pt; }}
     .container {{ max-width: 100%; padding: 0; }}
-    .summary-card {{ border: 1px solid #ccc; }}
+    .summary-card {{ border: 1px solid #d9d9d9; }}
     .finding-card {{ break-inside: avoid; }}
     .footer {{ font-size: 9pt; }}
   }}
