@@ -2,6 +2,16 @@
 
 All notable changes to datascope are documented here.
 
+## [2.3.4] — 2026-07-31
+
+### Fixed
+- **`__version__` now matches the release.** `datascope/__init__.py` reported `2.3.2` while the 2.3.3 wheel's metadata said `2.3.3`, so `datascope --version` and every HTML/PDF report's generator tag misreported the version for pip users. Both `__init__.py` and `pyproject.toml` are now pinned to the same version.
+
+### Documentation
+- **README "Example Output"** replaced with a captured transcript of a real run: the sample is 200 rows × 4 columns and produces 2 Critical findings (both on `revenue_mixed`), not the previously shown 4 findings across 6 columns with a non-existent `status` column.
+- **Severity table** now states missing-value findings are Warning at ≥50% blank (below 50% is Info), matching `findings/severity.py`.
+- **CSV date caveat** added: date strings in loader-recognized formats are parsed at load, so a CSV column mixing `2026-01-15` and `01/15/2026` is normalized before analysis and does not raise a Mixed-date finding; supply the column as text (e.g. an `.xlsx`) to surface it.
+
 ## [2.3.3] — 2026-07-30
 
 ### Changed
