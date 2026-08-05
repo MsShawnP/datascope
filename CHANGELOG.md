@@ -2,6 +2,14 @@
 
 All notable changes to datascope are documented here.
 
+## [2.4.0] — 2026-08-05
+
+### Fixed
+- **Mixed date formats are now detected in CSV files.** The CSV loader coerced date-like strings to `datetime` on load, erasing the raw format before the mixed-date analyzer could see it — so a column mixing `2026-01-01` and `01/02/2026` was silently reconciled and never flagged, the exact silent coercion datascope exists to surface. Date-like CSV cells are now kept as strings (a CSV has no type metadata; a date is text), so `analyze_mixed_dates` sees the raw formats and reports the inconsistency. Excel date cells, which arrive already typed from openpyxl, are unaffected.
+
+### Docs
+- README missing-value threshold now reads 10% to match the code default (`_DEFAULT_THRESHOLD_PCT`), correcting a stale "40%".
+
 ## [2.3.2] — 2026-07-27
 
 ### Fixed

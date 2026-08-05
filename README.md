@@ -19,7 +19,7 @@ datascope finds these problems, explains what's wrong in plain English, and tell
 |---|---|---|
 | **Mixed types** | 485 numbers + 15 strings in a "numeric" column | Critical |
 | **Sentinel values** | "N/A", "TBD", "pending" hiding in numeric data | Critical |
-| **Missing values** | 40% of a column is blank — aggregations silently exclude those rows | Warning |
+| **Missing values** | 10% of a column is blank — aggregations silently exclude those rows | Warning |
 | **Leading-zero inconsistency** | "00123" alongside "456" — keys that won't match | Warning |
 | **Mixed date formats** | "01/15/2026" and "2026-01-15" in the same column | Warning |
 | **Suspected duplicate IDs** | 98% unique in an ID column — the other 2% will fan out joins | Warning |
