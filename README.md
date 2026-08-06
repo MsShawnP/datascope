@@ -103,16 +103,14 @@ datascope huge_file.csv --max-rows 100000
 
 ```
 datascope: Analyzing sample_mixed_types.xlsx...
-  200 rows x 6 columns
+  200 rows x 4 columns
 
-Found 4 findings:
-  2 Critical  ########
-  1 Warning   ####
-  1 Info      ####
+Found 2 findings:
+  2 Critical ########
 
 Top critical findings:
-  * revenue_mixed: 15 non-numeric values hiding in an otherwise numeric column
-  * status: Sentinel values 'N/A' and 'TBD' in numeric data
+  * revenue_mixed: However, 15 str values were found among 200 non-null values (the majority type covers 92.5%). Examples of unexpected values: 'N/A', 'N/A', 'N/A', and 2 more.
+  * revenue_mixed: However, 7.5% of values (1 distinct sentinel string) are placeholder text rather than real data: 'N/A' (15 times).
 
 Report saved: reports/sample_mixed_types_diagnostic.pdf
 ```
